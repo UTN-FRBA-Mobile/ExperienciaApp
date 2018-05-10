@@ -2,7 +2,9 @@ package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.app.Activity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.Marker;
@@ -37,6 +39,16 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         tvTitle.setText(experiencia.getNombre());
         tvSubTitle.setText(experiencia.getDescripcion());
 
+      /*  Button button = (Button) view.findViewById(R.id.button_view_activity);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast.makeText(CustomInfoWindowAdapter.this.context,
+                        "Ver Actividad",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        */
         return view;
     }
+
 }

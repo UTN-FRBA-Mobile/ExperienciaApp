@@ -1,5 +1,6 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
+import android.content.Intent;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -96,9 +97,16 @@ public class ExperienciaActivity extends FragmentActivity implements OnMapReadyC
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-                Toast.makeText(ExperienciaActivity.this.getApplicationContext(),
+
+                Intent myIntent = new Intent(ExperienciaActivity.this, ExperienciaDetailActivity.class);
+                myIntent.putExtra("title", marker.getTitle()); //Optional parameters
+                ExperienciaActivity.this.startActivity(myIntent);
+
+
+                /*Toast.makeText(ExperienciaActivity.this.getApplicationContext(),
                         "Marcador elegido:"+marker.getTitle(),
                         Toast.LENGTH_SHORT).show();
+                */
             }
         });
     }
