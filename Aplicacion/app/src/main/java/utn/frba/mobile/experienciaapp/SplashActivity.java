@@ -8,7 +8,7 @@ import android.os.Bundle;
 import com.crashlytics.android.Crashlytics;
 
 import io.fabric.sdk.android.Fabric;
-import utn.frba.mobile.experienciaapp.experiencia.ExperienciaActivity;
+import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 
 public class SplashActivity extends AppCompatActivity {
@@ -35,7 +35,7 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 finish();
 
-                Intent i = new Intent(getBaseContext(), ExperienciaActivity.class);
+                Intent i = new Intent(getBaseContext(), BuscarExperienciaActivity.class);
                 startActivity(i);
             }
         }, 3000);//Time of splash

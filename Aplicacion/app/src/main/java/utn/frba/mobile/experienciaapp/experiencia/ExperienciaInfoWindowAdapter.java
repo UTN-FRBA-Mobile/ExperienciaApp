@@ -11,21 +11,16 @@ import com.google.gson.Gson;
 import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 
-public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+public class ExperienciaInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
 
     private Activity context;
 
-    public CustomInfoWindowAdapter(Activity context){
+    public ExperienciaInfoWindowAdapter(Activity context){
         this.context = context;
     }
 
     @Override
     public View getInfoWindow(Marker marker) {
-        return null;
-    }
-
-    @Override
-    public View getInfoContents(Marker marker) {
         View view = context.getLayoutInflater().inflate(R.layout.customwindow, null);
 
         Gson gson = new Gson();
@@ -38,5 +33,10 @@ public class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         tvSubTitle.setText(experiencia.getDescripcion());
 
         return view;
+    }
+
+    @Override
+    public View getInfoContents(Marker marker) {
+        return null;
     }
 }
