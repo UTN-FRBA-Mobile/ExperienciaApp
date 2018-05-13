@@ -8,21 +8,30 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import java.util.ArrayList;
+
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.lib.utils.DownloadImageTask;
 
 public class ViewPagerAdapter extends PagerAdapter {
 
     private Context context;
     private LayoutInflater layoutInflater;
-    private Integer [] images = {R.drawable.imagen1, R.drawable.imagen2, R.drawable.imagen3, R.drawable.imagen4, R.drawable.imagen5, R.drawable.imagen6};
+    private ArrayList<String> imagenes;
 
     public ViewPagerAdapter(Context context) {
         this.context = context;
     }
 
+    public ViewPagerAdapter(Context context, ArrayList<String> imagenes) {
+        this.context = context;
+        this.imagenes = imagenes;
+    }
+
+
     @Override
     public int getCount() {
-        return images.length;
+        return imagenes.size();
     }
 
     @Override
@@ -35,7 +44,7 @@ public class ViewPagerAdapter extends PagerAdapter {
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = layoutInflater.inflate(R.layout.custom_layout, null);
         ImageView imageView = (ImageView) view.findViewById(R.id.customLayoutImageView);
-        imageView.setImageResource(images[position]);
+        new DownloadImageTask(imageView).execute(imagenes.get(position));
 
         ViewPager vp = (ViewPager) container;
         vp.addView(view, 0);
@@ -48,5 +57,6 @@ public class ViewPagerAdapter extends PagerAdapter {
         View view = (View) object;
         vp.removeView(view);
     }
+
 }
 

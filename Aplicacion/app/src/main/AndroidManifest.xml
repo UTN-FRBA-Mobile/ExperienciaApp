@@ -40,7 +40,8 @@
         <activity
             android:name=".experiencia.ExperienciaActivity"
             android:label="@string/title_activity_experiencia" />
-        <activity android:name=".experiencia.ExperienciaDetailActivity"></activity>
+        <activity android:name=".experiencia.ExperienciaDetailActivity" />
+        <activity android:name=".experiencia.ProductorActivity"></activity>
     </application>
 
 </manifest>

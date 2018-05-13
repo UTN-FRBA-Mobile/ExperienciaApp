@@ -97,16 +97,9 @@ public class ExperienciaActivity extends FragmentActivity implements OnMapReadyC
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
-
                 Intent myIntent = new Intent(ExperienciaActivity.this, ExperienciaDetailActivity.class);
-                myIntent.putExtra("title", marker.getTitle()); //Optional parameters
+                myIntent.putExtra("id",123); //Optional parameters
                 ExperienciaActivity.this.startActivity(myIntent);
-
-
-                /*Toast.makeText(ExperienciaActivity.this.getApplicationContext(),
-                        "Marcador elegido:"+marker.getTitle(),
-                        Toast.LENGTH_SHORT).show();
-                */
             }
         });
     }

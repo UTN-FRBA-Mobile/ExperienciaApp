@@ -3,6 +3,8 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+
 public class Experiencia {
 
     @SerializedName("id")
@@ -32,6 +34,18 @@ public class Experiencia {
     @SerializedName("productor")
     @Expose
     private Productor productor;
+    @SerializedName("hora_desde")
+    @Expose
+    private String horaDesde;
+    @SerializedName("hora_hasta")
+    @Expose
+    private String horaHasta;
+    @SerializedName("direccion")
+    @Expose
+    private String direccion;
+    @SerializedName("imagenes")
+    @Expose
+    private ArrayList<String> imagenes;
 
     public Integer getId() {
         return id;
@@ -105,4 +119,35 @@ public class Experiencia {
         this.productor = productor;
     }
 
+    public String getDireccion() {
+        return direccion;
+    }
+
+    public void setDireccion(String direccion) {
+        this.direccion = direccion;
+    }
+
+    public String getHoraDesde() {
+        return horaDesde;
+    }
+
+    public void setHoraDesde(String horaDesde) {
+        this.horaDesde = horaDesde;
+    }
+
+    public String getHoraHasta() {
+        return horaHasta;
+    }
+
+    public void setHoraHasta(String horaHasta) {
+        this.horaHasta = horaHasta;
+    }
+
+    public ArrayList<String> getImagenes() {
+        return imagenes;
+    }
+
+    public void setImagenes(ArrayList<String> imagenes) {
+        this.imagenes = imagenes;
+    }
 }

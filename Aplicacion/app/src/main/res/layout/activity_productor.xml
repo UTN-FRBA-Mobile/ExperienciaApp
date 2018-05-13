@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".experiencia.ExperienciaDetailActivity">
+    tools:context="utn.frba.mobile.experienciaapp.experiencia.ProductorActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,67 +19,84 @@
                 android:orientation="vertical"
                 android:padding="20px">
 
-                <android.support.v4.view.ViewPager
-                    android:id="@+id/photoSlider"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"></android.support.v4.view.ViewPager>
-
                 <TextView
-                    android:id="@+id/productor"
+                    android:id="@+id/nombre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/ic_person_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
-                    android:textStyle="bold"
-                    android:onClick="verProductor"
-                    android:textColor="#002a70"
-                    android:clickable="true"/>
+                    android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/direccion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/ic_location_on_black_24dp"
-                    android:drawablePadding="10dp"
                     android:padding="10dp"
+                    android:drawablePadding="10dp"
+                    android:textStyle="bold" />
+
+                <RatingBar
+                    android:id="@+id/calificacion"
+                    android:layout_width="wrap_content"
+                    android:textAlignment="center"
+                    android:layout_height="wrap_content"
+                    android:isIndicator="true"/>
+
+                <TextView
+                    android:id="@+id/telefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_local_phone_black_24dp"
+                    android:padding="10dp"
+                    android:drawablePadding="10dp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/fecha"
+                    android:id="@+id/celular"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_date_range_black_24dp"
-                    android:drawablePadding="10dp"
+                    android:drawableLeft="@drawable/ic_phone_iphone_black_24dp"
                     android:padding="10dp"
+                    android:drawablePadding="10dp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/hora"
+                    android:id="@+id/email"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_watch_later_black_24dp"
-                    android:drawablePadding="10dp"
+                    android:drawableLeft="@drawable/ic_mail_outline_black_24dp"
                     android:padding="10dp"
+                    android:drawablePadding="10dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/dni"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_featured_video_black_24dp"
+                    android:padding="10dp"
+                    android:drawablePadding="10dp"
                     android:textStyle="bold" />
 
                 <Button
-                    android:id="@+id/button_view_itinerary"
+                    android:id="@+id/ver_experiencias"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:drawableLeft="@drawable/ic_menu_black_24dp"
                     android:drawablePadding="10dp"
-                    android:onClick="viewItinerary"
-                    android:text="@string/view_itinerary" />
+                    android:text="Listado de experiencias"
+                    android:onClick="verExperiencias"/>
 
-                <TextView
-                    android:id="@+id/precio"
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/ver_fotos"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/ic_attach_money_black_24dp"
+                    android:drawableLeft="@drawable/ic_photo_library_black_24dp"
                     android:drawablePadding="10dp"
-                    android:padding="10dp"
-                    android:textStyle="bold" />
+                    android:text="Galeria de Fotos"
+                    android:onClick="verFotos"/>
 
                 <TextView
                     android:id="@+id/descripcion"
@@ -89,5 +106,4 @@
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
-
 </android.support.constraint.ConstraintLayout>
