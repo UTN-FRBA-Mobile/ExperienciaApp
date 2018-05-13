@@ -18,10 +18,10 @@ public class Experiencia {
     private String descripcion;
     @SerializedName("longitud")
     @Expose
-    private Object longitud;
+    private Double longitud;
     @SerializedName("latitud")
     @Expose
-    private Object latitud;
+    private Double latitud;
     @SerializedName("precio")
     @Expose
     private String precio;
@@ -71,19 +71,19 @@ public class Experiencia {
         this.descripcion = descripcion;
     }
 
-    public Object getLongitud() {
+    public Double getLongitud() {
         return longitud;
     }
 
-    public void setLongitud(Object longitud) {
+    public void setLongitud(Double longitud) {
         this.longitud = longitud;
     }
 
-    public Object getLatitud() {
+    public Double getLatitud() {
         return latitud;
     }
 
-    public void setLatitud(Object latitud) {
+    public void setLatitud(Double latitud) {
         this.latitud = latitud;
     }
 

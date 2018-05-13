@@ -10,6 +10,7 @@
          location permissions for the 'MyLocation' functionality. 
     -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:allowBackup="true"
@@ -35,13 +36,16 @@
         -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDHA0YxVNVrtPpSNKT8Z246af51LOtuO_I" />
+            android:value="@string/google_maps_key" />
+
 
         <activity
-            android:name=".experiencia.ExperienciaActivity"
-            android:label="@string/title_activity_experiencia" />
-        <activity android:name=".experiencia.ExperienciaDetailActivity" />
+            android:name=".experiencia.BuscarExperienciaActivity"
+            android:label="@string/title_activity_test_slide"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+        <activity android:name=".experiencia.ExperienciaDetailActivity" ></activity>
         <activity android:name=".experiencia.ProductorActivity"></activity>
+
     </application>
 
 </manifest>
