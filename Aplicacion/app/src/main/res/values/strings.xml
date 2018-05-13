@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">ExperienciaApp</string>
+    <string name="title_activity_experiencia">Map</string>
+    <string name="view_itinerary">Ver Itinerario</string>
+    <string name="title_activity_test_slide">Buscar Experiencias</string>
+
+    //BuscarExperienciasActivity Strings
+    <string name="listado_de_experiencias"><![CDATA[<b>Listado Experiencias</b>]]></string>
+    <string name="follow"><![CDATA[Follow us<br/>on <a href="http://twitter.com/umanoapp">Twitter</a>]]></string>
+</resources>
