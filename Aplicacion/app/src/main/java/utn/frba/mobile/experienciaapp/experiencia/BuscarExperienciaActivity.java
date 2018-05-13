@@ -1,6 +1,7 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.Manifest;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -188,10 +189,19 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             }
         });
 
-        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+       /* mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
                 marker.hideInfoWindow();
+            }
+        });*/
+
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                Intent myIntent = new Intent(BuscarExperienciaActivity.this, ExperienciaDetailActivity.class);
+                myIntent.putExtra("id",123); //Optional parameters
+                BuscarExperienciaActivity.this.startActivity(myIntent);
             }
         });
 

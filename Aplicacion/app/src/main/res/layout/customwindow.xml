@@ -34,4 +34,6 @@
             android:contentDescription="imagen"
             android:src="@android:drawable/btn_star_big_on" />
     </LinearLayout>
+
+
 </LinearLayout>

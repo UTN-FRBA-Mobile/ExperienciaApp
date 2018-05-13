@@ -32,6 +32,15 @@ public class ExperienciaInfoWindowAdapter implements GoogleMap.InfoWindowAdapter
         tvTitle.setText(experiencia.getNombre());
         tvSubTitle.setText(experiencia.getDescripcion());
 
+      /*  Button button = (Button) view.findViewById(R.id.button_view_activity);
+        button.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Toast.makeText(CustomInfoWindowAdapter.this.context,
+                        "Ver Actividad",
+                        Toast.LENGTH_SHORT).show();
+            }
+        });
+        */
         return view;
     }
 

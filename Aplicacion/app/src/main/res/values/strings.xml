@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">ExperienciaApp</string>
     <string name="title_activity_experiencia">Map</string>
+    <string name="view_itinerary">Ver Itinerario</string>
     <string name="title_activity_test_slide">Buscar Experiencias</string>
 
     //BuscarExperienciasActivity Strings
