@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "174762413559",
+    "firebase_url": "https://experienciaapp-7446f.firebaseio.com",
+    "project_id": "experienciaapp-7446f",
+    "storage_bucket": "experienciaapp-7446f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:174762413559:android:329849d3eeedf536",
+        "android_client_info": {
+          "package_name": "utn.frba.mobile.experienciaap"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "174762413559-0btn31umhq0c7j3r1k0e3jspielbdric.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBl2sZsdfV6wxIkFPoH75ifVmG4-Gh8rZA"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
