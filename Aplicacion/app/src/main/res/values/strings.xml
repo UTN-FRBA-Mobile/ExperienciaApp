@@ -1,4 +1,5 @@
 <resources>
+    <string name="com.crashlytics.android.build_id">RANDOM_UUID</string>
     <string name="app_name">ExperienciaApp</string>
     <string name="title_activity_experiencia">Map</string>
     <string name="view_itinerary">Ver Itinerario</string>
@@ -7,4 +8,11 @@
     //BuscarExperienciasActivity Strings
     <string name="listado_de_experiencias"><![CDATA[<b>Listado Experiencias</b>]]></string>
     <string name="follow"><![CDATA[Follow us<br/>on <a href="http://twitter.com/umanoapp">Twitter</a>]]></string>
+
+    //Login
+    <string name="hint_email">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="create_account_button">Create Account</string>
+    <string name="signin_button">Sign In</string>
+    <string name="signout_button">Sign Out</string>
 </resources>
