@@ -8,12 +8,20 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:174762413559:android:329849d3eeedf536",
+        "mobilesdk_app_id": "1:174762413559:android:5d9b952f194490d7",
         "android_client_info": {
-          "package_name": "utn.frba.mobile.experienciaap"
+          "package_name": "utn.frba.mobile.experienciaapp"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "174762413559-03h4ehjkvgu05qia0ccg9qttmo6iua8j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "utn.frba.mobile.experienciaapp",
+            "certificate_hash": "491cb544c1a663c1461a1889311216f83fe2acd4"
+          }
+        },
         {
           "client_id": "174762413559-0btn31umhq0c7j3r1k0e3jspielbdric.apps.googleusercontent.com",
           "client_type": 3
@@ -29,8 +37,13 @@
           "status": 1
         },
         "appinvite_service": {
-          "status": 1,
-          "other_platform_oauth_client": []
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "174762413559-0btn31umhq0c7j3r1k0e3jspielbdric.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         },
         "ads_service": {
           "status": 2
