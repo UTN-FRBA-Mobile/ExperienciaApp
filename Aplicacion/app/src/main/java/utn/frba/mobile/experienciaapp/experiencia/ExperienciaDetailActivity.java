@@ -40,7 +40,7 @@ public class ExperienciaDetailActivity extends AppCompatActivity {
 
     private void setLayoutTexts(Experiencia exp){
         setTxtTextView(R.id.fecha, exp.getFechaCreacion());
-        setTxtTextView(R.id.hora, exp.getHoraDesde() + " - " + exp.getHoraHasta());
+        setTxtTextView(R.id.hora, exp.getDuracion() + " hs");
         setTxtTextView(R.id.precio, exp.getPrecio());
         setTxtTextView(R.id.descripcion, exp.getDescripcion());
         setTxtTextView(R.id.direccion, exp.getDireccion());
@@ -60,8 +60,7 @@ public class ExperienciaDetailActivity extends AppCompatActivity {
         exp.setFechaCreacion("09/05/2018");
         exp.setPrecio("1200");
         exp.setDireccion("Av Siempreviva 4530, El Cairo");
-        exp.setHoraDesde("10:00");
-        exp.setHoraHasta("12:00");
+        exp.setDuracion("2");
 
         ArrayList imagenes = new ArrayList();
         imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-portada-600x429.jpg");

@@ -34,13 +34,9 @@ public class Experiencia {
     @SerializedName("productor")
     @Expose
     private Productor productor;
-    @SerializedName("hora_desde")
+    @SerializedName("duracion")
     @Expose
-    private String horaDesde;
-    @SerializedName("hora_hasta")
-    @Expose
-    private String horaHasta;
-    @SerializedName("direccion")
+    private String duracion;
     @Expose
     private String direccion;
     @SerializedName("imagenes")
@@ -127,20 +123,12 @@ public class Experiencia {
         this.direccion = direccion;
     }
 
-    public String getHoraDesde() {
-        return horaDesde;
+    public String getDuracion() {
+        return duracion;
     }
 
-    public void setHoraDesde(String horaDesde) {
-        this.horaDesde = horaDesde;
-    }
-
-    public String getHoraHasta() {
-        return horaHasta;
-    }
-
-    public void setHoraHasta(String horaHasta) {
-        this.horaHasta = horaHasta;
+    public void setDuracion(String duracion) {
+        this.duracion = duracion;
     }
 
     public ArrayList<String> getImagenes() {

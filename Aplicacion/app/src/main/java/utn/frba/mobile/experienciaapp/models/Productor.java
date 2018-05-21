@@ -53,6 +53,9 @@ public class Productor {
     @SerializedName("last_request")
     @Expose
     private String lastRequest;
+    @SerializedName("habilitado")
+    @Expose
+    private String habilitado;
 
     public Integer getId() {
         return id;
@@ -180,6 +183,14 @@ public class Productor {
 
     public void setLastRequest(String lastRequest) {
         this.lastRequest = lastRequest;
+    }
+
+    public String getHabilitado() {
+        return habilitado;
+    }
+
+    public void setHabilitado(String habilitado) {
+        this.habilitado = habilitado;
     }
 
 }
