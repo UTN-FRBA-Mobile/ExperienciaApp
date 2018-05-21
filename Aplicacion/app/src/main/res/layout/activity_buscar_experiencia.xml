@@ -23,47 +23,49 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal|center"
             android:orientation="horizontal"
-            android:paddingTop="10dp">
+            android:background="@drawable/border_top_black"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp">
 
             <ImageView
                 android:id="@+id/interesesIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/checkbox_on_background"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:src="@drawable/ic_intereses"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
 
             <ImageView
                 android:id="@+id/fechaHoraIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/ic_menu_my_calendar"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:src="@drawable/ic_fecha_hora"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
 
             <ImageView
                 android:id="@+id/presupuestoIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/ic_partial_secure"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:src="@drawable/ic_presupuesto"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
 
             <ImageView
                 android:id="@+id/favoritosIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/star_big_on"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:src="@drawable/ic_favoritos"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
 
             <ImageView
                 android:id="@+id/distanciaIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:src="@android:drawable/ic_menu_compass"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"/>
+                android:src="@drawable/ic_cercania"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
         </LinearLayout>
 
     </android.support.design.widget.AppBarLayout>

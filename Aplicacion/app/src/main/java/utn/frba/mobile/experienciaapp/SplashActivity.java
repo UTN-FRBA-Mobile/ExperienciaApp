@@ -36,7 +36,7 @@ public class SplashActivity extends AppCompatActivity {
             public void run() {
                 finish();
 
-                Intent i = new Intent(getBaseContext(), LoginActivity.class);
+                Intent i = new Intent(getBaseContext(), HomeActivity.class);
                 startActivity(i);
             }
         }, 3000);//Time of splash

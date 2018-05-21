@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
 import utn.frba.mobile.experienciaapp.lib.permisions.PermisionsUtils;
+import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 
 public class BuscarExperienciaActivity extends AppCompatActivity implements OnMapReadyCallback {
@@ -147,6 +149,15 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             @Override
             public void onClick(View view) {
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+            }
+        });
+
+        ImageView interesesIB = (ImageView)findViewById(R.id.interesesIB);
+        interesesIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Alert alert = new Alert(BuscarExperienciaActivity.this);
+                alert.Show("Descripcion","Titulo");
             }
         });
     }
