@@ -31,6 +31,7 @@ import java.util.Map;
 
 import im.delight.android.location.SimpleLocation;
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.experiencia.filtros.FiltrosBehaviour;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
 import utn.frba.mobile.experienciaapp.lib.permisions.PermisionsUtils;
@@ -45,15 +46,30 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
     private SlidingUpPanelLayout mLayout;
     private GoogleMap mMap;
     private SimpleLocation simpleLocation;
+    //Filtros
+    private ImageView favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
+
+
 
     private static final String[] LOCATION_PERMS={
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
     };
 
+    private void inicializarFiltros(){
+        favoritosIB=findViewById(R.id.favoritosIB);
+        interesesIB=findViewById(R.id.interesesIB);
+        fechaHoraIB=findViewById(R.id.fechaHoraIB);
+        presupuestoIB=findViewById(R.id.presupuestoIB);
+        distanciaIB=findViewById(R.id.distanciaIB);
+        FiltrosBehaviour filtrosBehaviour=new FiltrosBehaviour();
+        filtrosBehaviour.setBehaviour(favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        inicializarFiltros();
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
 
@@ -249,4 +265,5 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
 
     }
+
 }
