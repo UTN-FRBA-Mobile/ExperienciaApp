@@ -57,24 +57,22 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
     };
 
     private void inicializarFiltros(){
-        favoritosIB=findViewById(R.id.favoritosIB);
-        interesesIB=findViewById(R.id.interesesIB);
-        fechaHoraIB=findViewById(R.id.fechaHoraIB);
-        presupuestoIB=findViewById(R.id.presupuestoIB);
-        distanciaIB=findViewById(R.id.distanciaIB);
+        this.favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
+        this.interesesIB=(ImageView)findViewById(R.id.interesesIB);
+        this.fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
+        this.presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
+        this.distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
         FiltrosBehaviour filtrosBehaviour=new FiltrosBehaviour();
-        filtrosBehaviour.setBehaviour(favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB);
+        filtrosBehaviour.setBehaviour(this,this.favoritosIB,this.interesesIB,this.fechaHoraIB,this.presupuestoIB,this.distanciaIB);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        inicializarFiltros();
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
-
         simpleLocation = new SimpleLocation(this);
-
+        inicializarFiltros();
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -168,14 +166,7 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             }
         });
 
-        ImageView interesesIB = (ImageView)findViewById(R.id.interesesIB);
-        interesesIB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Alert alert = new Alert(BuscarExperienciaActivity.this);
-                alert.Show("Descripcion","Titulo");
-            }
-        });
+
     }
 
     public Map<String,Marker> markerList = new HashMap<>();

@@ -22,4 +22,8 @@
     <string name="create_account_button">Create Account</string>
     <string name="signin_button">Sign In</string>
     <string name="signout_button">Sign Out</string>
+    <string name="gastronomia">Gastronomia</string>
+    <string name="deportes">Deportes</string>
+    <string name="relax">Relax</string>
+    <string name="tituloPopupFavoritos">Favoritos</string>
 </resources>

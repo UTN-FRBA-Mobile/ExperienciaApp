@@ -59,6 +59,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity  android:label="@string/tituloPopupFavoritos"  android:name=".experiencia.filtros.FavoritosFiltro" android:theme="@style/AppTheme.PopUp"></activity>
     </application>
 
 </manifest>
