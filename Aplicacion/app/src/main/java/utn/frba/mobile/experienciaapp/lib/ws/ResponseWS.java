@@ -5,6 +5,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
+import utn.frba.mobile.experienciaapp.models.ModeloGenerico;
+
 public class ResponseWS {
 
     @SerializedName("value")
@@ -15,7 +17,7 @@ public class ResponseWS {
     private String msg;
     @SerializedName("result")
     @Expose
-    private List<Object> result = null;
+    private List<? extends ModeloGenerico> result = null;
 
     public String getValue() {
         return value;
@@ -33,11 +35,11 @@ public class ResponseWS {
         this.msg = msg;
     }
 
-    public List<Object> getResult() {
+    public List<? extends ModeloGenerico> getResult() {
         return result;
     }
 
-    public void setResult(List<Object> result) {
+    public void setResult(List<? extends ModeloGenerico> result) {
         this.result = result;
     }
 

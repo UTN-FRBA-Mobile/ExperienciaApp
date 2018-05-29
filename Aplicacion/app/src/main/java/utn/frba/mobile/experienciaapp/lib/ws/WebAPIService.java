@@ -14,6 +14,18 @@ public interface WebAPIService {
     String PARTIAL_URL = "/clientes/experiencias/";
 
     /**
+     * For testing purpose
+     */
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<String> getRawResponse(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion
+    );
+
+    /**
      * Trae informacion dependiendo del paramentro @accion que se le pase
      */
     @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
@@ -35,7 +47,7 @@ public interface WebAPIService {
             @Field("apartado") String apartado,
             @Field("key") String key,
             @Field("accion") String accion,
-            @Field("accion") String search
+            @Field("search") String search
     );
 }
 

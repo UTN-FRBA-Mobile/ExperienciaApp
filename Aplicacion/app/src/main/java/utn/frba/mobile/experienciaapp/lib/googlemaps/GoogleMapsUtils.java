@@ -14,21 +14,10 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 
 public class GoogleMapsUtils {
 
-    public static Marker AddMyLocationToMap(GoogleMap mMap,double lat, double lng,float zoom){
-        MarkerOptions markerOpt = new MarkerOptions();
-
+    public static void GoToLocationInMap(GoogleMap mMap, double lat, double lng, float zoom){
         LatLng latLng1 = new LatLng(lat, lng);
-
-        markerOpt.position(latLng1);
-                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.experience_point));
-
-        Marker marker = mMap.addMarker(markerOpt);
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
-
         CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng1, zoom);
         mMap.animateCamera(yourLocation);
-
-        return marker;
     }
 
     public static MarkerOptions GetMarkerOptionsFor(Experiencia experiencia){
@@ -43,14 +32,25 @@ public class GoogleMapsUtils {
         markerOpt.position(latLng1)
                 .title(experiencia.getNombre())
                 .snippet((new Gson()).toJson(experiencia));
-                //.icon(BitmapDescriptorFactory.fromResource(R.drawable.experience_point));
+        //.icon(BitmapDescriptorFactory.fromResource(drawableResource));
 
         return markerOpt;
     }
 
-    public static Marker AddMarkerOptionsToMap(GoogleMap mMap, MarkerOptions markerOpt, boolean showInfoWindow){
+    public static MarkerOptions GetMarkerOptionsFor(double lat, double lng){
+        MarkerOptions markerOpt = new MarkerOptions();
+        LatLng latLng1 = new LatLng(lat, lng);
+        markerOpt.position(latLng1);
+        return markerOpt;
+    }
+
+    public static Marker AddMarkerOptionsToMap(GoogleMap mMap, MarkerOptions markerOpt,int drawableResource, boolean showInfoWindow){
         Marker marker = mMap.addMarker(markerOpt);
-        marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        if(drawableResource == 0) {
+            marker.setIcon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+        }else {
+            marker.setIcon(BitmapDescriptorFactory.fromResource(drawableResource));
+        }
         if(showInfoWindow)
             marker.showInfoWindow();
 

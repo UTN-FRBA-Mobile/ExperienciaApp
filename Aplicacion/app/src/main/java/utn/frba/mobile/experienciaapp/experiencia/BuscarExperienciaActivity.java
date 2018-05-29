@@ -1,7 +1,7 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
-import android.Manifest;
 import android.content.Intent;
+import android.location.LocationListener;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -9,22 +9,20 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.gson.Gson;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -36,9 +34,15 @@ import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
 import utn.frba.mobile.experienciaapp.lib.permisions.PermisionsUtils;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
+import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
+import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class BuscarExperienciaActivity extends AppCompatActivity implements OnMapReadyCallback {
+public class BuscarExperienciaActivity extends AppCompatActivity implements OnMapReadyCallback,ReciveResponseWS {
+
+    private static final int GET_EXPERIENCIAS = 1;
 
     private static final String TAG = "BuscarExperienciaAct";
     private static final float DEFAULT_ZOOM = 17f;
@@ -46,33 +50,32 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
     private SlidingUpPanelLayout mLayout;
     private GoogleMap mMap;
     private SimpleLocation simpleLocation;
+    private List<Experiencia> experiencias;
+
+    public Marker myLocation = null;
+
     //Filtros
     private ImageView favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
 
-
-
-    private static final String[] LOCATION_PERMS={
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-    };
-
-    private void inicializarFiltros(){
-        this.favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
-        this.interesesIB=(ImageView)findViewById(R.id.interesesIB);
-        this.fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
-        this.presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
-        this.distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
-        FiltrosBehaviour filtrosBehaviour=new FiltrosBehaviour();
-        filtrosBehaviour.setBehaviour(this,this.favoritosIB,this.interesesIB,this.fechaHoraIB,this.presupuestoIB,this.distanciaIB);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
-        simpleLocation = new SimpleLocation(this);
+
+        WSRetrofit.GetExperiencias().enqueue(WSRetrofit.ParseResponseWS(this,GET_EXPERIENCIAS));
+
+        experiencias = MockExperiences();
+
         inicializarFiltros();
+
+        boolean requireFineGranularity = false;
+        boolean passiveMode = false;
+        long updateIntervalInMilliseconds = 1000;
+        boolean requireNewLocation = false;
+        simpleLocation = new SimpleLocation(this,requireFineGranularity,passiveMode,updateIntervalInMilliseconds,requireNewLocation);
+
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -89,7 +92,23 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                         final double longitude = simpleLocation.getLongitude();
 
                         if(mMap != null){
-                            GoogleMapsUtils.AddMyLocationToMap(mMap,latitude,longitude,DEFAULT_ZOOM);
+                            simpleLocation.setListener(new SimpleLocation.Listener() {
+
+                                public void onPositionChanged() {
+                                    final double latitude = simpleLocation.getLatitude();
+                                    final double longitude = simpleLocation.getLongitude();
+                                    Toast.makeText(BuscarExperienciaActivity.this, latitude+","+longitude, Toast.LENGTH_SHORT).show();
+                                    myLocation.remove();
+                                    myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
+                                    GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,DEFAULT_ZOOM);
+                                }
+
+                            });
+                            if(myLocation != null)
+                                myLocation.remove();
+
+                            myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
+                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,DEFAULT_ZOOM);
                         }
                     }
                 }else{
@@ -106,46 +125,18 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Experiencia experiencia = (Experiencia) ((ListView) parent).getAdapter().getItem(position);
+                if(experiencia != null && experiencia.getLongitud() != null && experiencia.getLatitud() != null){
+                    GoogleMapsUtils.GoToLocationInMap(mMap,experiencia.getLatitud(),experiencia.getLongitud() ,DEFAULT_ZOOM);
+                    mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
                 Toast.makeText(BuscarExperienciaActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
             }
         });
 
-        List<String> your_array_list = Arrays.asList(
-                "This",
-                "Is",
-                "An",
-                "Example",
-                "ListView",
-                "That",
-                "You",
-                "Can",
-                "Scroll",
-                ".",
-                "It",
-                "Shows",
-                "How",
-                "Any",
-                "Scrollable",
-                "View",
-                "Can",
-                "Be",
-                "Included",
-                "As",
-                "A",
-                "Child",
-                "Of",
-                "SlidingUpPanelLayout"
-        );
+        ExperienciaListAdapter experienciaListAdapterAdapter = new ExperienciaListAdapter(this, experiencias);
 
-        // This is the array adapter, it takes the context of the activity as a
-        // first parameter, the type of list view as a second parameter and your
-        // array as a third parameter.
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
-                this,
-                android.R.layout.simple_list_item_1,
-                your_array_list );
-
-        lv.setAdapter(arrayAdapter);
+        lv.setAdapter(experienciaListAdapterAdapter);
 
         mLayout = (SlidingUpPanelLayout) findViewById(R.id.sliding_layout);
         mLayout.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
@@ -166,18 +157,39 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             }
         });
 
-
+        /*
+        ImageView interesesIB = (ImageView)findViewById(R.id.interesesIB);
+        interesesIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Alert alert = new Alert(BuscarExperienciaActivity.this);
+                alert.Show("Descripcion","Titulo");
+            }
+        });
+        */
     }
 
-    public Map<String,Marker> markerList = new HashMap<>();
+    public Map<Integer,Marker> markerList = new HashMap<>();
+
+    private void inicializarFiltros(){
+        this.favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
+        this.interesesIB=(ImageView)findViewById(R.id.interesesIB);
+        this.fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
+        this.presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
+        this.distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
+        FiltrosBehaviour filtrosBehaviour=new FiltrosBehaviour();
+        filtrosBehaviour.setBehaviour(this,this.favoritosIB,this.interesesIB,this.fechaHoraIB,this.presupuestoIB,this.distanciaIB);
+    }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        /*
         Experiencia experiencia = new Experiencia();
         experiencia.setNombre("Nombre de la experiencia");
         experiencia.setDescripcion("Descripcion de la experiencia");
         experiencia.setLatitud(-34d);
         experiencia.setLongitud(151d);
+        */
 
         //Set Map
         mMap = googleMap;
@@ -185,6 +197,7 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
         //Obtener coordenadas de los toques en el mapa
+        /*
         mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener(){
             public void onMapClick(LatLng latLng){
                 Toast.makeText(BuscarExperienciaActivity.this.getApplicationContext(),latLng.latitude + "," + latLng.longitude,Toast.LENGTH_SHORT).show();
@@ -194,11 +207,13 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 experiencia.setLatitud(latLng.latitude);
                 experiencia.setLongitud(latLng.longitude);
 
-                Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(experiencia),true);
-                markerList.put(latLng.latitude + "," + latLng.longitude,marker);
+                //Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(experiencia),R.drawable.ic_experience_point,true);
+                //markerList.put(latLng.latitude + "," + latLng.longitude,marker);
             }
         });
+        */
 
+        /*
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
@@ -206,30 +221,34 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 return true;
             }
         });
+        */
 
-       /* mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
-            @Override
-            public void onInfoWindowClick(Marker marker) {
-                marker.hideInfoWindow();
-            }
-        });*/
 
         mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
             @Override
             public void onInfoWindowClick(Marker marker) {
+                Experiencia experiencia = (new Gson()).fromJson(marker.getSnippet(), Experiencia.class);
                 Intent myIntent = new Intent(BuscarExperienciaActivity.this, ExperienciaDetailActivity.class);
-                myIntent.putExtra("id",123); //Optional parameters
+                if(experiencia != null){
+                    myIntent.putExtra("id",experiencia.getId()); //Optional parameters
+                }
                 BuscarExperienciaActivity.this.startActivity(myIntent);
             }
         });
+
 
         //Set Custom InfoWindow Adapter
         ExperienciaInfoWindowAdapter adapter = new ExperienciaInfoWindowAdapter(BuscarExperienciaActivity.this);
         mMap.setInfoWindowAdapter(adapter);
 
-        Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(experiencia),true);
+        if(!experiencias.isEmpty()){
+            for(Experiencia experiencia : experiencias){
+                Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(experiencia),R.drawable.ic_experience_point,true);
+                markerList.put(experiencia.getId(),marker);
+            }
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), DEFAULT_ZOOM));
+            GoogleMapsUtils.GoToLocationInMap(mMap,experiencias.get(0).getLatitud(),experiencias.get(0).getLongitud(),DEFAULT_ZOOM);
+        }
     }
 
     @Override
@@ -257,4 +276,60 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
 
     }
 
+    //TODO: BOrrar
+    private List<Experiencia> MockExperiences(){
+        List<Experiencia> experinecias = new ArrayList<>();
+
+        for(int i=0;i<10;i++) {
+            double v = i / 1000d;
+            Experiencia exp = new Experiencia();
+            exp.setNombre("Pirámides de egipto");
+            exp.setDescripcion("Las pirámides de Egipto son, de todos los vestigios legados por egipcios de la antigüedad, los más portentosos y emblemáticos monumentos de esta civilización, y en particular, las tres grandespirámides de Giza, las tumbas o cenotafios de los faraones Keops, Kefrén y Micerino, cuya construcción se remonta, para la gran mayoría de estudiosos, al periodo denominado Imperio Antiguo de Egipto. La Gran Pirámide de Giza, construida por Keops (Jufu), es una de lasSiete Maravillas del Mundo Antiguo, además de ser la única que aún perdura. Su visita guiada comienza con una fascinante introducción de cada una de las tres pirámides de Gizeh: la de Keops, la de Kefrén y la de Micerinos. Dispondrá de tiempo libre para entrar a una de las pirámides (coste adicional), aunque a su guía no le estará permitido entrar con usted." +
+                    "Un corto trayecto por carretera hacia el lado de la meseta más cercano a la ciudad le lleva a los pies de la esfinge, el enigmático símbolo de Egipto. También en Gizeh puede visitar el Museo de la Barca Solar (opcional), que alberga la magníficamente bien conservada barca funeraria de Keops.");
+            exp.setFechaCreacion("09/05/2018");
+            exp.setPrecio("1200");
+            exp.setDireccion("Av Siempreviva 4530, El Cairo");
+            exp.setDuracion("2");
+            exp.setLatitud(-34 + v);
+            exp.setLongitud(151 + v);
+
+            ArrayList imagenes = new ArrayList();
+            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-portada-600x429.jpg");
+            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-giza-600x337.jpg");
+            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-pesado-del-corazon-600x350.jpg");
+            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-piramides.jpg");
+            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-ciudad-constructores-600x450.jpg");
+
+            exp.setImagenes(imagenes);
+
+            Productor productor = new Productor();
+            productor.setId(100);
+            productor.setNombre("Roberto");
+            productor.setApellido("Gómez Bolaños");
+
+            exp.setProductor(productor);
+
+            experinecias.add(exp);
+        }
+
+        return experinecias;
+    }
+
+    @Override
+    public void ReciveResponseWS(ResponseWS responseWS,int accion) {
+        switch(accion){
+            case GET_EXPERIENCIAS:{
+                if(responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
+                    experiencias = (List<Experiencia>) responseWS.getResult();
+                }else{
+                    experiencias = new ArrayList<>();
+                }
+                break;
+            }
+
+            default:{
+                Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+            }
+        }
+    }
 }

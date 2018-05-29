@@ -15,6 +15,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
+import utn.frba.mobile.experienciaapp.HomeActivity;
 import utn.frba.mobile.experienciaapp.lib.errors.ErrorTreatment;
 import utn.frba.mobile.experienciaapp.models.ModeloGenerico;
 
@@ -26,10 +27,10 @@ public class WSRetrofit {
     private static final String APARTADO = "API";
     private static final String KEY = "14E95809B4E10C0F03D386D0FA96273C759815E5C9204FE26885F25868D04A1D";
 
-    private static final String GET_EXPERIENCIAS = "get_experiencias";
-    private static final String GET_PERFIL_PRODUCTOR = "get_productor_perfil";
-    private static final String GET_PUNTOS_INTERES_OF_EXPERIENCIA = "get_puntos_interes_of_experiencia";
-    private static final String GET_MI_PERFIL = "get_mi_perfil";
+    public static final String GET_EXPERIENCIAS = "get_experiencias";
+    public static final String GET_PERFIL_PRODUCTOR = "get_productor_perfil";
+    public static final String GET_PUNTOS_INTERES_OF_EXPERIENCIA = "get_puntos_interes_of_experiencia";
+    public static final String GET_MI_PERFIL = "get_mi_perfil";
     
 
     private WSRetrofit(){}  //private constructor.
@@ -62,8 +63,8 @@ public class WSRetrofit {
         return webApiService;
     }
 
-    public static List<Object> ParseResult(ResponseWS responseWS){
-        List<Object> results = new ArrayList<>();
+    public static List<? extends ModeloGenerico> ParseResult(ResponseWS responseWS){
+        List<ModeloGenerico> results = new ArrayList<>();
         if(!responseWS.getResult().isEmpty()) {
             for (Object obj:responseWS.getResult()) {
                 if(obj instanceof LinkedTreeMap) {
@@ -74,7 +75,10 @@ public class WSRetrofit {
                             Class<?> clazz = Class.forName(className);
                             Gson gson = new GsonBuilder().setLenient().create();
                             Object specificObject = gson.fromJson(gson.toJson(obj), clazz);
-                            results.add(specificObject);//TODO: Comprobar que es instancia de clazz
+                            if(specificObject instanceof ModeloGenerico) {
+                                ModeloGenerico modeloGenerico = (ModeloGenerico) specificObject;
+                                results.add(modeloGenerico);//TODO: Comprobar que es instancia de clazz
+                            }
                         } catch (ClassNotFoundException e) {
                             ErrorTreatment.TreatExeption(e);
                         }
@@ -87,6 +91,14 @@ public class WSRetrofit {
             }
         }
         return results;
+    }
+
+    public static Call<String> GetRawResponse(String accion){
+        return WSRetrofit.getInstance().getRawResponse(
+                APARTADO,
+                KEY,
+                accion
+        );
     }
 
     public static Call<ResponseWS> GetExperiencias(){
@@ -106,16 +118,32 @@ public class WSRetrofit {
         );
     }
 
-    public static Callback<ResponseWS> ParseResponseWS(){
+    public static Callback<ResponseWS> ParseResponseWS(final ReciveResponseWS reciveResponseWS,final int accion){
         return new Callback<ResponseWS>() {
             @Override
             public void onResponse(Call<ResponseWS> call, Response<ResponseWS> response) {
                 response.body().setResult(ParseResult(response.body()));
+                reciveResponseWS.ReciveResponseWS(response.body(),accion);
                 Log.e("RETROFIT","Success");
             }
 
             @Override
             public void onFailure(Call<ResponseWS> call, Throwable t) {
+                // handle execution failures like no internet connectivity
+                Log.e("RETROFIT","ERROR");
+            }
+        };
+    }
+
+    public static Callback<String> ProcessRawResponse(){
+        return new Callback<String>() {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response) {
+                Log.e("RETROFIT","Success");
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t) {
                 // handle execution failures like no internet connectivity
                 Log.e("RETROFIT","ERROR");
             }

@@ -1,7 +1,9 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -24,23 +26,15 @@ public class ExperienciaInfoWindowAdapter implements GoogleMap.InfoWindowAdapter
         View view = context.getLayoutInflater().inflate(R.layout.customwindow, null);
 
         Gson gson = new Gson();
-        Experiencia experiencia = gson.fromJson(marker.getSnippet(), Experiencia.class);
+        final Experiencia experiencia = gson.fromJson(marker.getSnippet(), Experiencia.class);
 
         TextView tvTitle = (TextView) view.findViewById(R.id.tv_title);
         TextView tvSubTitle = (TextView) view.findViewById(R.id.tv_subtitle);
+        Button verBT = (Button) view.findViewById(R.id.verBT);
 
         tvTitle.setText(experiencia.getNombre());
         tvSubTitle.setText(experiencia.getDescripcion());
 
-      /*  Button button = (Button) view.findViewById(R.id.button_view_activity);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Toast.makeText(CustomInfoWindowAdapter.this.context,
-                        "Ver Actividad",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-        */
         return view;
     }
 
