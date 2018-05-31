@@ -26,9 +26,6 @@ public class SplashActivity extends AppCompatActivity {
             //e.printStackTrace();
         }
 
-        //TODO: Delete, solo para testeo en debug
-        WSRetrofit.GetExperiencias().enqueue(WSRetrofit.ParseResponseWS());
-
         final Handler handler = new Handler();
 
         handler.postDelayed(new Runnable() {
