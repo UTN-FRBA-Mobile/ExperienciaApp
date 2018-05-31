@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 
-import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 
 public class FiltrosBehaviour {

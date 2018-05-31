@@ -49,5 +49,25 @@ public interface WebAPIService {
             @Field("accion") String accion,
             @Field("search") String search
     );
+
+    /**
+     *
+     */
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<ResponseWS> filterExperiencia(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("intereses") String intereses,
+            @Field("fecha_inicio") String fecha_inicio,
+            @Field("fecha_fin") String fecha_fin,
+            @Field("precio_inicio") String precio_inicio,
+            @Field("precio_fin") String precio_fin,
+            @Field("latitud") String latitud,
+            @Field("longitud") String longitud,
+            @Field("distancia") String distancia
+    );
 }
 

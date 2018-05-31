@@ -2,6 +2,7 @@ package utn.frba.mobile.experienciaapp.lib.ws;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.internal.LinkedTreeMap;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public class ResponseWS {
     private String msg;
     @SerializedName("result")
     @Expose
-    private List<? extends ModeloGenerico> result = null;
+    private List<Object> result = null;
 
     public String getValue() {
         return value;
@@ -35,11 +36,11 @@ public class ResponseWS {
         this.msg = msg;
     }
 
-    public List<? extends ModeloGenerico> getResult() {
+    public List<Object> getResult() {
         return result;
     }
 
-    public void setResult(List<? extends ModeloGenerico> result) {
+    public void setResult(List<Object> result) {
         this.result = result;
     }
 

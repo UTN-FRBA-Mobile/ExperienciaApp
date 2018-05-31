@@ -4,8 +4,13 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class Experiencia extends ModeloGenerico{
+import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+
+public class Experiencia extends ModeloGenerico {
 
     @SerializedName("id")
     @Expose
@@ -43,6 +48,43 @@ public class Experiencia extends ModeloGenerico{
     @Expose
     private ArrayList<String> imagenes;
 
+    //Metodos para WS
+    public static Call<ResponseWS> Filter(String intereses,
+                                          String fecha_inicio,
+                                          String fecha_fin,
+                                          String precio_inicio,
+                                          String precio_fin,
+                                          String latitud,
+                                          String longitud,
+                                          String distancia){
+        return WSRetrofit.getInstance().filterExperiencia(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.FILTER_EXPERIENCIAS,
+                intereses,
+                fecha_inicio,
+                fecha_fin,
+                precio_inicio,
+                precio_fin,
+                latitud,
+                longitud,
+                distancia
+        );
+    }
+
+    public static List<Experiencia> addResponseToList(List<Experiencia> experiencias, ResponseWS responseWS){
+        if(responseWS != null && !responseWS.getResult().isEmpty()){
+            for(Object obj : responseWS.getResult()){
+                if(obj instanceof Experiencia){
+                    experiencias.add((Experiencia) obj);
+                }
+            }
+        }
+
+        return experiencias;
+    }
+
+    //GETTERS Y SETTERS
     public Integer getId() {
         return id;
     }

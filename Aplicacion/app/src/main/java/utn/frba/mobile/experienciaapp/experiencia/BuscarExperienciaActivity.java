@@ -43,6 +43,7 @@ import utn.frba.mobile.experienciaapp.models.Productor;
 public class BuscarExperienciaActivity extends AppCompatActivity implements OnMapReadyCallback,ReciveResponseWS {
 
     private static final int GET_EXPERIENCIAS = 1;
+    private static final int FILTER_EXPERIENCIAS = 2;
 
     private static final String TAG = "BuscarExperienciaAct";
     private static final float DEFAULT_ZOOM = 17f;
@@ -64,17 +65,32 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
 
-        WSRetrofit.GetExperiencias().enqueue(WSRetrofit.ParseResponseWS(this,GET_EXPERIENCIAS));
-
-        experiencias = MockExperiences();
-
-        inicializarFiltros();
-
         boolean requireFineGranularity = false;
         boolean passiveMode = false;
         long updateIntervalInMilliseconds = 1000;
         boolean requireNewLocation = false;
         simpleLocation = new SimpleLocation(this,requireFineGranularity,passiveMode,updateIntervalInMilliseconds,requireNewLocation);
+
+
+        //WSRetrofit.GetExperiencias().enqueue(WSRetrofit.ParseResponseWS(this,GET_EXPERIENCIAS));
+        while(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+            PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
+        }
+
+        while(!simpleLocation.hasLocationEnabled()){
+            SimpleLocation.openSettings(BuscarExperienciaActivity.this);
+        }
+
+        if (PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
+            final double latitude = simpleLocation.getLatitude();
+            final double longitude = simpleLocation.getLongitude();
+
+            Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),"10").enqueue(WSRetrofit.ParseResponseWS(this,FILTER_EXPERIENCIAS));
+        }
+
+        experiencias = MockExperiences();
+
+        inicializarFiltros();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -317,10 +333,22 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
 
     @Override
     public void ReciveResponseWS(ResponseWS responseWS,int accion) {
+
         switch(accion){
             case GET_EXPERIENCIAS:{
                 if(responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
-                    experiencias = (List<Experiencia>) responseWS.getResult();
+                    experiencias.clear();
+                    experiencias = Experiencia.addResponseToList(experiencias,responseWS);
+                }else{
+                    experiencias = new ArrayList<>();
+                }
+                break;
+            }
+
+            case FILTER_EXPERIENCIAS:{
+                if(responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
+                    experiencias.clear();
+                    experiencias = Experiencia.addResponseToList(experiencias,responseWS);
                 }else{
                     experiencias = new ArrayList<>();
                 }
@@ -331,5 +359,6 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
             }
         }
+
     }
 }

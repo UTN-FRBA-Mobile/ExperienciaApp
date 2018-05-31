@@ -24,14 +24,15 @@ public class WSRetrofit {
     private static Retrofit retrofit;
     private static WebAPIService webApiService;
 
-    private static final String APARTADO = "API";
-    private static final String KEY = "14E95809B4E10C0F03D386D0FA96273C759815E5C9204FE26885F25868D04A1D";
+    public static final String APARTADO = "API";
+    public static final String KEY = "14E95809B4E10C0F03D386D0FA96273C759815E5C9204FE26885F25868D04A1D";
 
     public static final String GET_EXPERIENCIAS = "get_experiencias";
     public static final String GET_PERFIL_PRODUCTOR = "get_productor_perfil";
     public static final String GET_PUNTOS_INTERES_OF_EXPERIENCIA = "get_puntos_interes_of_experiencia";
     public static final String GET_MI_PERFIL = "get_mi_perfil";
-    
+
+    public static final String FILTER_EXPERIENCIAS = "filter_experiencias";
 
     private WSRetrofit(){}  //private constructor.
 
@@ -63,8 +64,39 @@ public class WSRetrofit {
         return webApiService;
     }
 
-    public static List<? extends ModeloGenerico> ParseResult(ResponseWS responseWS){
-        List<ModeloGenerico> results = new ArrayList<>();
+
+    public static List<Object> ParseResult(ResponseWS responseWS){
+        List<Object> results = new ArrayList<Object>();
+        if(!responseWS.getResult().isEmpty()) {
+            for (Object obj:responseWS.getResult()) {
+                if(obj instanceof LinkedTreeMap) {
+                    String className = ModeloGenerico.GetClassOf((LinkedTreeMap)obj);
+
+                    if (className != null) {
+                        try {
+                            Class<?> clazz = Class.forName(className);
+                            Gson gson = new GsonBuilder().setLenient().create();
+                            Object specificObject = gson.fromJson(gson.toJson(obj), clazz);
+                            if(specificObject instanceof ModeloGenerico && specificObject.getClass() == clazz) {
+                                results.add(specificObject);
+                            }
+                        } catch (ClassNotFoundException e) {
+                            ErrorTreatment.TreatExeption(e);
+                        }
+                    } else {
+                        ErrorTreatment.TreatExeption(new Exception("Null ModeloGenerico.GetClassOf of " + obj.toString()));
+                    }
+                }else{
+                    ErrorTreatment.TreatExeption(new Exception("Object from ResponseWS not instance of LinkedTreeMap," + obj.toString()));
+                }
+            }
+        }
+        return results;
+    }
+
+    /*
+    public static List<Object> ParseResult(ResponseWS responseWS){
+        List<Object> results = new ArrayList<>();
         if(!responseWS.getResult().isEmpty()) {
             for (Object obj:responseWS.getResult()) {
                 if(obj instanceof LinkedTreeMap) {
@@ -92,6 +124,7 @@ public class WSRetrofit {
         }
         return results;
     }
+    */
 
     public static Call<String> GetRawResponse(String accion){
         return WSRetrofit.getInstance().getRawResponse(
