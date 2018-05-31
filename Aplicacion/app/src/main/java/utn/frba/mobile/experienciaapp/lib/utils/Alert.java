@@ -154,7 +154,7 @@ public class Alert {
         ShowConfirmation(text,title,onClickListener,true);
     }
 
-    public void ShowView(final View view,final String title){
+    public void ShowView(final View view,final String title,final String backButtonName){
         Runnable alert_ui = new Runnable() {
             public void run() {
                 alert = new Dialog(act, R.style.CustomDialogTheme);
@@ -168,7 +168,11 @@ public class Alert {
                 message_alert.setVisibility(View.GONE);
 
                 alertCancel = (Button) alert.findViewById(R.id.button_cancel);
-                alertCancel.setText("Cancelar");
+                if(backButtonName == null) {
+                    alertCancel.setText("Cancelar");
+                }else{
+                    alertCancel.setText(backButtonName);
+                }
                 alertCancel.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -229,6 +233,20 @@ public class Alert {
         };
 
         act.runOnUiThread(alert_ui);
+    }
+
+    public boolean IsActive(){
+        if(alert != null)
+            return alert.isShowing();
+
+        return false;
+    }
+
+    public boolean IsLoading(){
+        if(alert_loading != null)
+            return alert_loading.isShowing();
+
+        return false;
     }
 
     public void DismissLoading(){

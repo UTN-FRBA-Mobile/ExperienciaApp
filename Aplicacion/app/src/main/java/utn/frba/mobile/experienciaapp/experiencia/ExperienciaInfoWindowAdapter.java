@@ -1,7 +1,6 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -23,14 +22,13 @@ public class ExperienciaInfoWindowAdapter implements GoogleMap.InfoWindowAdapter
 
     @Override
     public View getInfoWindow(Marker marker) {
-        View view = context.getLayoutInflater().inflate(R.layout.customwindow, null);
+        View view = context.getLayoutInflater().inflate(R.layout.experiencia_custommapwindow, null);
 
         Gson gson = new Gson();
         final Experiencia experiencia = gson.fromJson(marker.getSnippet(), Experiencia.class);
 
         TextView tvTitle = (TextView) view.findViewById(R.id.tv_title);
         TextView tvSubTitle = (TextView) view.findViewById(R.id.tv_subtitle);
-        Button verBT = (Button) view.findViewById(R.id.verBT);
 
         tvTitle.setText(experiencia.getNombre());
         tvSubTitle.setText(experiencia.getDescripcion());

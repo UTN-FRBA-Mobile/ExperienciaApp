@@ -16,7 +16,8 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+        </android.support.v7.widget.Toolbar>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,8 +85,8 @@
 
     <ImageView
         android:id="@+id/myLocationButton"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="@dimen/ic_general_size"
+        android:layout_height="@dimen/ic_general_size"
         android:layout_gravity="end|bottom"
         android:layout_marginBottom="20dp"
         android:layout_marginRight="20dp"

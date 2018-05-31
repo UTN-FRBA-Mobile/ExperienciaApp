@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_vertical|center_horizontal"
+    android:padding="10dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selecciona un lugar o tu ubicación para buscar experiencias:" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="vertical">
+        <Button
+            android:id="@+id/miUbicacionB"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mi Ubicación"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="O"
+            android:textAlignment="center"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/buscarUbicacionIB"
+                android:layout_width="@dimen/ic_general_size"
+                android:layout_height="@dimen/ic_general_size"
+                android:src="@drawable/ic_search" />
+
+            <!--<EditText
+                android:id="@+id/ubicacionET"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />-->
+            <AutoCompleteTextView
+                android:id="@+id/autoCompleteUbicacionATV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:hint="@string/autocomplete_hint"
+                android:singleLine="true" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Radio de busqueda (KM): " />
+
+        <EditText
+            android:id="@+id/distanciaET"
+            android:layout_width="match_parent"
+            android:inputType="number"
+            android:layout_height="wrap_content"
+            android:text="10"/>
+    </LinearLayout>
+
+</LinearLayout>

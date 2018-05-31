@@ -1,5 +1,7 @@
 package utn.frba.mobile.experienciaapp.lib.googlemaps;
 
+import android.app.Activity;
+
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -7,6 +9,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import im.delight.android.location.SimpleLocation;
 import com.google.gson.Gson;
 
 import utn.frba.mobile.experienciaapp.R;
@@ -14,7 +17,24 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 
 public class GoogleMapsUtils {
 
-    public static void GoToLocationInMap(GoogleMap mMap, double lat, double lng, float zoom){
+    private static final float DEFAULT_ZOOM = 15f;
+
+    public static SimpleLocation InitializeSimpleLocation(Activity activity){
+        boolean requireFineGranularity = false;
+        boolean passiveMode = false;
+        long updateIntervalInMilliseconds = 10;
+        boolean requireNewLocation = false;
+        SimpleLocation simpleLocation = new SimpleLocation(activity,requireFineGranularity,passiveMode,updateIntervalInMilliseconds,requireNewLocation);
+
+        return simpleLocation;
+    }
+
+    public static void GoToLocationInMap(GoogleMap mMap, double lat, double lng, Float zoom){
+
+        if(zoom == null){
+            zoom = DEFAULT_ZOOM;
+        }
+
         LatLng latLng1 = new LatLng(lat, lng);
         CameraUpdate yourLocation = CameraUpdateFactory.newLatLngZoom(latLng1, zoom);
         mMap.animateCamera(yourLocation);

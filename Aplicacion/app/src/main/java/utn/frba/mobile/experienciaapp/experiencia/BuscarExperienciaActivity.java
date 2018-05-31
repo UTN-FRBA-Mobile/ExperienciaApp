@@ -1,25 +1,40 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.content.Intent;
-import android.location.LocationListener;
+import android.location.Address;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBufferResponse;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
@@ -28,10 +43,12 @@ import java.util.List;
 import java.util.Map;
 
 import im.delight.android.location.SimpleLocation;
+import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
-import utn.frba.mobile.experienciaapp.experiencia.filtros.FiltrosBehaviour;
+import utn.frba.mobile.experienciaapp.lib.googlemaps.GeocoderTask;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
+import utn.frba.mobile.experienciaapp.lib.googlemaps.ReciveAdress;
 import utn.frba.mobile.experienciaapp.lib.permisions.PermisionsUtils;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
@@ -40,20 +57,26 @@ import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class BuscarExperienciaActivity extends AppCompatActivity implements OnMapReadyCallback,ReciveResponseWS {
+public class BuscarExperienciaActivity extends BaseActivityWithToolBar implements OnMapReadyCallback,ReciveResponseWS,ReciveAdress {
+
+    //TODO: PAsar a preference store
+    public static String RADIO_DISTANCIA = "10";
+    public static LatLng INIT_LOCATION;
 
     private static final int GET_EXPERIENCIAS = 1;
     private static final int FILTER_EXPERIENCIAS = 2;
 
     private static final String TAG = "BuscarExperienciaAct";
-    private static final float DEFAULT_ZOOM = 17f;
 
     private SlidingUpPanelLayout mLayout;
     private GoogleMap mMap;
     private SimpleLocation simpleLocation;
-    private List<Experiencia> experiencias;
+    private List<Experiencia> experiencias = new ArrayList<>();
 
-    public Marker myLocation = null;
+    public Alert distanciaFilterAlert;
+    public View distanciaView;
+
+    public Marker myLocation;
 
     //Filtros
     private ImageView favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
@@ -61,81 +84,53 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //experiencias = MockExperiences();//TODO: Borrar, solo para testing
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
 
-        boolean requireFineGranularity = false;
-        boolean passiveMode = false;
-        long updateIntervalInMilliseconds = 1000;
-        boolean requireNewLocation = false;
-        simpleLocation = new SimpleLocation(this,requireFineGranularity,passiveMode,updateIntervalInMilliseconds,requireNewLocation);
-
-
-        //WSRetrofit.GetExperiencias().enqueue(WSRetrofit.ParseResponseWS(this,GET_EXPERIENCIAS));
-        while(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
-            PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
-        }
-
-        while(!simpleLocation.hasLocationEnabled()){
-            SimpleLocation.openSettings(BuscarExperienciaActivity.this);
-        }
-
-        if (PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
-            final double latitude = simpleLocation.getLatitude();
-            final double longitude = simpleLocation.getLongitude();
-
-            Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),"10").enqueue(WSRetrofit.ParseResponseWS(this,FILTER_EXPERIENCIAS));
-        }
-
-        experiencias = MockExperiences();
-
+        AddBackButtonToToolBar();
+        simpleLocation = GoogleMapsUtils.InitializeSimpleLocation(this);
         inicializarFiltros();
 
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        ImageView myLocationButton = (ImageView) findViewById(R.id.myLocationButton);
-        myLocationButton.setOnClickListener(new View.OnClickListener() {
+        SetMyLocationButton();
+
+        SetListOfExperiencias(experiencias);
+
+        if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()){
+            final double latitude = simpleLocation.getLatitude();
+            final double longitude = simpleLocation.getLongitude();
+
+            INIT_LOCATION = new LatLng(latitude,longitude);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        final Alert alertInicio = new Alert(this);
+        View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
-                    if (!simpleLocation.hasLocationEnabled()) {
-                        SimpleLocation.openSettings(BuscarExperienciaActivity.this);
-                    }else{
-                        final double latitude = simpleLocation.getLatitude();
-                        final double longitude = simpleLocation.getLongitude();
-
-                        if(mMap != null){
-                            simpleLocation.setListener(new SimpleLocation.Listener() {
-
-                                public void onPositionChanged() {
-                                    final double latitude = simpleLocation.getLatitude();
-                                    final double longitude = simpleLocation.getLongitude();
-                                    Toast.makeText(BuscarExperienciaActivity.this, latitude+","+longitude, Toast.LENGTH_SHORT).show();
-                                    myLocation.remove();
-                                    myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
-                                    GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,DEFAULT_ZOOM);
-                                }
-
-                            });
-                            if(myLocation != null)
-                                myLocation.remove();
-
-                            myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
-                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,DEFAULT_ZOOM);
-                        }
-                    }
-                }else{
-                    PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
-                }
+            public void onClick(View v) {
+                alertInicio.Dismiss();
+                distanciaIB.performClick();
             }
-        });
+        };
 
+        alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias.","Nuevas Experiencias",onClickListener,false);
+    }
+
+    public Map<Integer,Marker> markerList = new HashMap<>();
+
+    private void SetListOfExperiencias(List<Experiencia> listExperiencias) {
         TextView t = (TextView) findViewById(R.id.listadoExperienciasTV);
         t.setText(Html.fromHtml(getString(R.string.listado_de_experiencias)));
-
 
         ListView lv = (ListView) findViewById(R.id.list);
         lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -143,14 +138,14 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Experiencia experiencia = (Experiencia) ((ListView) parent).getAdapter().getItem(position);
                 if(experiencia != null && experiencia.getLongitud() != null && experiencia.getLatitud() != null){
-                    GoogleMapsUtils.GoToLocationInMap(mMap,experiencia.getLatitud(),experiencia.getLongitud() ,DEFAULT_ZOOM);
+                    GoogleMapsUtils.GoToLocationInMap(mMap,experiencia.getLatitud(),experiencia.getLongitud() ,null);
                     mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
                 }
                 Toast.makeText(BuscarExperienciaActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
             }
         });
 
-        ExperienciaListAdapter experienciaListAdapterAdapter = new ExperienciaListAdapter(this, experiencias);
+        ExperienciaListAdapter experienciaListAdapterAdapter = new ExperienciaListAdapter(this, listExperiencias);
 
         lv.setAdapter(experienciaListAdapterAdapter);
 
@@ -172,9 +167,98 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
             }
         });
+    }
 
-        /*
-        ImageView interesesIB = (ImageView)findViewById(R.id.interesesIB);
+    private void SetAutocompleteUbicacionFromFilter(){
+        // Construct a GeoDataClient for the Google Places API for Android.
+        GeoDataClient mGeoDataClient = Places.getGeoDataClient(this, null);
+
+        // Retrieve the AutoCompleteTextView that will display Place suggestions.
+        AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView)distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
+
+        LatLngBounds latLngBounds = null;
+        if(INIT_LOCATION != null){
+            //Circle circle = new Circle(5000, INIT_LOCATION);
+            //latLngBounds = circle.getBounds();
+            latLngBounds = new LatLngBounds(
+                    INIT_LOCATION,
+                    INIT_LOCATION
+            );
+
+        }
+
+
+        // Set up the adapter that will retrieve suggestions from the Places Geo Data Client.
+        PlaceAutocompleteAdapter mAdapter = new PlaceAutocompleteAdapter(
+                this,
+                mGeoDataClient,
+                latLngBounds,
+                null);
+        mAutocompleteView.setAdapter(mAdapter);
+    }
+
+    private void AddRefreshMap(List<Experiencia> experienciaList){
+        if(!experienciaList.isEmpty()){
+            for(Experiencia experiencia : experienciaList){
+                Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(
+                        mMap,
+                        GoogleMapsUtils.GetMarkerOptionsFor(experiencia),
+                        R.drawable.ic_experience_point,
+                        false
+                );
+                markerList.put(experiencia.getId(),marker);
+            }
+
+            //GoogleMapsUtils.GoToLocationInMap(mMap,experiencias.get(0).getLatitud(),experiencias.get(0).getLongitud(),null);
+        }
+    }
+
+    private void SetMyLocationButton(){
+        ImageView myLocationButton = (ImageView) findViewById(R.id.myLocationButton);
+        myLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+                    if (!simpleLocation.hasLocationEnabled()) {
+                        SimpleLocation.openSettings(BuscarExperienciaActivity.this);
+                    }else{
+                        final double latitude = simpleLocation.getLatitude();
+                        final double longitude = simpleLocation.getLongitude();
+
+                        if(mMap != null){
+                            simpleLocation.setListener(new SimpleLocation.Listener() {
+
+                                public void onPositionChanged() {
+                                    final double latitude = simpleLocation.getLatitude();
+                                    final double longitude = simpleLocation.getLongitude();
+                                    Toast.makeText(BuscarExperienciaActivity.this, latitude+","+longitude, Toast.LENGTH_SHORT).show();
+                                    myLocation.remove();
+                                    myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
+                                    GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                                }
+
+                            });
+                            if(myLocation != null)
+                                myLocation.remove();
+
+                            myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
+                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                        }
+                    }
+                }else{
+                    PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
+                }
+            }
+        });
+    }
+
+    private void inicializarFiltros(){
+        favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
+        interesesIB=(ImageView)findViewById(R.id.interesesIB);
+        fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
+        presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
+        distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
+
         interesesIB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -182,19 +266,69 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 alert.Show("Descripcion","Titulo");
             }
         });
-        */
-    }
 
-    public Map<Integer,Marker> markerList = new HashMap<>();
+        distanciaIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                distanciaFilterAlert = new Alert(BuscarExperienciaActivity.this);
 
-    private void inicializarFiltros(){
-        this.favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
-        this.interesesIB=(ImageView)findViewById(R.id.interesesIB);
-        this.fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
-        this.presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
-        this.distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
-        FiltrosBehaviour filtrosBehaviour=new FiltrosBehaviour();
-        filtrosBehaviour.setBehaviour(this,this.favoritosIB,this.interesesIB,this.fechaHoraIB,this.presupuestoIB,this.distanciaIB);
+                LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
+                ll_content.setOrientation(LinearLayout.VERTICAL);
+                ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+
+                LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                distanciaView = inflater.inflate(R.layout.filtro_distancia, ll_content,false);
+                SetAutocompleteUbicacionFromFilter();
+
+                Button miUbicacionB = (Button) distanciaView.findViewById(R.id.miUbicacionB);
+                miUbicacionB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //View vParent = (View) v.getParent();
+
+                        if(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+                            PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
+                        }
+
+                        if(!simpleLocation.hasLocationEnabled()){
+                            SimpleLocation.openSettings(BuscarExperienciaActivity.this);
+                        }
+
+                        if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
+                            final double latitude = simpleLocation.getLatitude();
+                            final double longitude = simpleLocation.getLongitude();
+
+                            EditText distanciaET = (EditText) distanciaView.findViewById(R.id.distanciaET);
+                            RADIO_DISTANCIA = distanciaET.getText().toString();
+
+                            distanciaFilterAlert.Loading();
+                            Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this,FILTER_EXPERIENCIAS));
+                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                        }
+                    }
+                });
+
+
+                ImageButton buscarUbicacionIB = (ImageButton) distanciaView.findViewById(R.id.buscarUbicacionIB);
+                buscarUbicacionIB.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        //View vParent = (View) v.getParent();
+
+                        EditText distanciaET = (EditText) distanciaView.findViewById(R.id.distanciaET);
+                        RADIO_DISTANCIA = distanciaET.getText().toString();
+
+                        AutoCompleteTextView autoCompleteUbicacionATV = (AutoCompleteTextView) distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
+                        String location = autoCompleteUbicacionATV.getText().toString();
+                        if(location!=null && !location.equals("")){
+                            new GeocoderTask(BuscarExperienciaActivity.this).execute(location);
+                        }
+                    }
+                });
+
+                distanciaFilterAlert.ShowView(distanciaView,"Ubicación","Volver");
+            }
+        });
     }
 
     @Override
@@ -257,14 +391,7 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
         ExperienciaInfoWindowAdapter adapter = new ExperienciaInfoWindowAdapter(BuscarExperienciaActivity.this);
         mMap.setInfoWindowAdapter(adapter);
 
-        if(!experiencias.isEmpty()){
-            for(Experiencia experiencia : experiencias){
-                Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(experiencia),R.drawable.ic_experience_point,true);
-                markerList.put(experiencia.getId(),marker);
-            }
 
-            GoogleMapsUtils.GoToLocationInMap(mMap,experiencias.get(0).getLatitud(),experiencias.get(0).getLongitud(),DEFAULT_ZOOM);
-        }
     }
 
     @Override
@@ -352,6 +479,13 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
                 }else{
                     experiencias = new ArrayList<>();
                 }
+
+                SetListOfExperiencias(experiencias);
+                AddRefreshMap(experiencias);
+                if(distanciaFilterAlert.IsActive()) {
+                    distanciaFilterAlert.DismissLoading();
+                    distanciaFilterAlert.Dismiss();
+                }
                 break;
             }
 
@@ -360,5 +494,17 @@ public class BuscarExperienciaActivity extends AppCompatActivity implements OnMa
             }
         }
 
+    }
+
+    @Override
+    public void ReciveAdress(Address address) {
+        if(distanciaFilterAlert.IsActive()) {
+            distanciaFilterAlert.DismissLoading();
+            distanciaFilterAlert.Dismiss();
+        }
+        double latitude = address.getLatitude();
+        double longitude = address.getLongitude();
+        Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(this,FILTER_EXPERIENCIAS));
+        GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
     }
 }
