@@ -1,6 +1,9 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,6 +20,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +59,7 @@ import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
+import utn.frba.mobile.experienciaapp.models.Interes;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
 public class BuscarExperienciaActivity extends BaseActivityWithToolBar implements OnMapReadyCallback,ReciveResponseWS,ReciveAdress {
@@ -67,14 +72,19 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     private static final int FILTER_EXPERIENCIAS = 2;
 
     private static final String TAG = "BuscarExperienciaAct";
+    private SharedPreferences sharedPref;
 
     private SlidingUpPanelLayout mLayout;
     private GoogleMap mMap;
     private SimpleLocation simpleLocation;
+
     private List<Experiencia> experiencias = new ArrayList<>();
+    private List<Interes> intereses = new ArrayList<>();
 
     public Alert distanciaFilterAlert;
     public View distanciaView;
+    public Alert interesesFilterAlert;
+    public View interesesView;
 
     public Marker myLocation;
 
@@ -85,10 +95,13 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //experiencias = MockExperiences();//TODO: Borrar, solo para testing
+        intereses = MockIntereses();//TODO: Borrar, solo para testing
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
+
+        sharedPref = BuscarExperienciaActivity.this.getPreferences(Context.MODE_PRIVATE);
 
         AddBackButtonToToolBar();
         simpleLocation = GoogleMapsUtils.InitializeSimpleLocation(this);
@@ -120,10 +133,24 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
             public void onClick(View v) {
                 alertInicio.Dismiss();
                 distanciaIB.performClick();
+
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putBoolean(getString(R.string.alert_inicio_buscar_experiencia), true);
+                editor.commit();
             }
         };
 
-        alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias.","Nuevas Experiencias",onClickListener,false);
+        boolean flagAlertInicio = sharedPref.getBoolean(getString(R.string.alert_inicio_buscar_experiencia),false);
+        if(!flagAlertInicio)
+            alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias.","Nuevas Experiencias",onClickListener,false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putBoolean(getString(R.string.alert_inicio_buscar_experiencia), false);
+        editor.commit();
+        super.onDestroy();
     }
 
     public Map<Integer,Marker> markerList = new HashMap<>();
@@ -199,6 +226,12 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
     private void AddRefreshMap(List<Experiencia> experienciaList){
         if(!experienciaList.isEmpty()){
+            for(Map.Entry<Integer, Marker> markerEntry : markerList.entrySet()){
+                markerEntry.getValue().remove();
+            }
+        }
+
+        if(!experienciaList.isEmpty()){
             for(Experiencia experiencia : experienciaList){
                 Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(
                         mMap,
@@ -260,11 +293,31 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
 
         interesesIB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Alert alert = new Alert(BuscarExperienciaActivity.this);
-                alert.Show("Descripcion","Titulo");
-            }
+                @Override
+                public void onClick(View v) {
+                    interesesFilterAlert = new Alert(BuscarExperienciaActivity.this);
+
+                    LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
+                    ll_content.setOrientation(LinearLayout.VERTICAL);
+                    ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+
+                    LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                    interesesView = inflater.inflate(R.layout.filtro_intereses, ll_content,false);
+                    SetAutocompleteUbicacionFromFilter();
+
+                    LinearLayout ll_intereses = (LinearLayout) interesesView.findViewById(R.id.ll_intereses);
+
+                    if(!intereses.isEmpty()){
+                        for(Interes interes : intereses){
+                            Switch interesSw = new Switch(BuscarExperienciaActivity.this);
+                            interesSw.setText(interes.getNombre());
+                            interesSw.setPadding(0,0,0,5);
+                            ll_intereses.addView(interesSw);
+                        }
+                    }
+
+                    interesesFilterAlert.ShowView(interesesView,"Intereses","Volver");
+                }
         });
 
         distanciaIB.setOnClickListener(new View.OnClickListener() {
@@ -331,6 +384,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         });
     }
 
+    @SuppressLint("MissingPermission")
     @Override
     public void onMapReady(GoogleMap googleMap) {
         /*
@@ -345,6 +399,9 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         mMap = googleMap;
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setZoomControlsEnabled(true);
+        if(PermisionsUtils.canAccessLocation(this)) {
+            mMap.setMyLocationEnabled(true);
+        }
 
         //Obtener coordenadas de los toques en el mapa
         /*
@@ -458,6 +515,20 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         return experinecias;
     }
 
+    //TODO: BOrrar
+    private List<Interes> MockIntereses(){
+        List<Interes> interesList = new ArrayList<>();
+
+        for(int i=0;i<10;i++) {
+            double v = i / 1000d;
+            Interes inter = new Interes();
+            inter.setId(i);
+            inter.setNombre("Interes "+i);
+            interesList.add(inter);
+        }
+
+        return interesList;
+    }
     @Override
     public void ReciveResponseWS(ResponseWS responseWS,int accion) {
 

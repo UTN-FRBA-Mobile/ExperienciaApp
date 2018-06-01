@@ -22,9 +22,9 @@ public class GoogleMapsUtils {
     public static SimpleLocation InitializeSimpleLocation(Activity activity){
         boolean requireFineGranularity = false;
         boolean passiveMode = false;
-        long updateIntervalInMilliseconds = 10;
-        boolean requireNewLocation = false;
-        SimpleLocation simpleLocation = new SimpleLocation(activity,requireFineGranularity,passiveMode,updateIntervalInMilliseconds,requireNewLocation);
+        long updateIntervalInMilliseconds = 1;
+        //boolean requireNewLocation = false;
+        SimpleLocation simpleLocation = new SimpleLocation(activity,requireFineGranularity,passiveMode,updateIntervalInMilliseconds);
 
         return simpleLocation;
     }

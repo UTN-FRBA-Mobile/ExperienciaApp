@@ -16,6 +16,9 @@
     <string name="listado_de_experiencias"><![CDATA[<b>Listado Experiencias</b>]]></string>
     <string name="follow"><![CDATA[Follow us<br/>on <a href="http://twitter.com/umanoapp">Twitter</a>]]></string>
     <string name="autocomplete_hint">Ingrese un nombre o dirección</string>
+        //Preference keys
+        <string name="alert_inicio_buscar_experiencia">alert_inicio_buscar_experiencia</string>
+
 
     //Login
     <string name="hint_email">Email</string>
