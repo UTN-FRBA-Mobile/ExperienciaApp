@@ -15,7 +15,6 @@ import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 import utn.frba.mobile.experienciaapp.models.Reserva;
-import utn.frba.mobile.experienciaapp.service.AgendaService;
 
 public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.CardViewHolder> {
     private List<Reserva> reservas;
@@ -42,10 +41,13 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
         Experiencia experiencia=fechaExperiencia.getExperiencia();
         ViewPageAdapter viewPageAdapter=new ViewPageAdapter(this.context,experiencia.getImagenes());
         holder.imagenIV.setAdapter(viewPageAdapter);
-        holder.tituloTV.setText(experiencia.getNombre()+" ("+experiencia.getDireccion()+")");
-        StringBuilder infoExp=new StringBuilder();
-        infoExp.append("Precio: $").append(reserva.getTotal()).append("\nDuración: ").append(experiencia.getDuracion());
-        holder.infoTV.setText(infoExp.toString());
+        holder.tituloTV.setText(experiencia.getNombre());
+        holder.direccion.setText(experiencia.getDireccion());
+        holder.fecha.setText(fechaExperiencia.getFechaHora());
+        holder.precio.setText(reserva.getTotal().toString());
+//        StringBuilder infoExp=new StringBuilder();
+//        infoExp.append("Precio: $").append(reserva.getTotal()).append("\nDuración: ").append(experiencia.getDuracion());
+//        holder.infoTV.setText(infoExp.toString());
     }
 
     @Override
@@ -56,8 +58,7 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
     public static  class CardViewHolder extends RecyclerView.ViewHolder {
 
         private ViewPager imagenIV;
-        private TextView tituloTV;
-        private TextView infoTV;
+        private TextView tituloTV,infoTV,direccion,precio,fecha;
 
         public CardViewHolder(View itemView) {
             super(itemView);
@@ -67,7 +68,11 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
         private void initComponenteReference() {
             this.imagenIV = itemView.findViewById(R.id.imagenIV);
             this.tituloTV = itemView.findViewById(R.id.tituloTV);
-            this.infoTV = itemView.findViewById(R.id.infoTV);
+           // this.infoTV = itemView.findViewById(R.id.infoTV);
+            this.direccion = itemView.findViewById(R.id.direccion);
+            this.precio = itemView.findViewById(R.id.precio);
+            this.fecha = itemView.findViewById(R.id.fecha);
+
 
         }
     }

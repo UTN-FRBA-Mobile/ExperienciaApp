@@ -10,7 +10,9 @@
     <color name="colorLetra">#484759</color>
     <color name="dialog_bg_blur">#FF3C3B3A</color>
     <color name="white">#ffffff</color>
+    <color name="tituloExperiencia">#000000</color>
     <color name="white_transparent">#20ffffff</color>
     <color name="blue_transparent">#9015162a</color>
     <color name="colorSecondary">#484759</color>
+    <color name="cardReserva">#f2f2f2</color>
 </resources>
