@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".agenda.AgendaActivity"
+    android:padding="10px">
+
+        <android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/card_view"
+            android:layout_width="match_parent"
+            android:scaleType="fitXY"
+            android:layout_height="wrap_content"
+            >
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+                <android.support.v4.view.ViewPager
+                    android:id="@+id/imagenIV"
+                    android:layout_width="wrap_content"
+                    android:layout_height="200px">
+
+
+                </android.support.v4.view.ViewPager>
+            <TextView
+                android:id="@+id/tituloTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/imagenIV"
+                android:text="Detalle"
+                android:textStyle="bold"
+                />
+            <TextView
+               android:id="@+id/infoTV"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tituloTV"
+                android:text="Realizara una experineca en Mardel plata"
+                />
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+
+</LinearLayout>
