@@ -5,6 +5,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,6 +27,7 @@ public class AgendaActivity extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView cardViewRV;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,10 +42,12 @@ public class AgendaActivity extends AppCompatActivity {
     private void initComponenteReference(){
         this.layoutManager=new GridLayoutManager(this,1);
         this.cardViewRV=findViewById(R.id.cardViewRV);
+        List<Reserva> reservas=AgendaService.getInstance().getMisReservas();
         this.cardViewRV.setHasFixedSize(true);
         this.cardViewRV.setLayoutManager(this.layoutManager);
-        this.recycleCardAdapter=new RecycleCardAdapter(this,AgendaService.getInstance().getMisReservas());
+        this.recycleCardAdapter=new RecycleCardAdapter(this,reservas);
         this.cardViewRV.setAdapter(recycleCardAdapter);
+
     }
 
     private void popularData(){

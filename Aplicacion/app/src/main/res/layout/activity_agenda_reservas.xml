@@ -8,6 +8,13 @@
     android:padding="10px"
     android:background="@color/white">
 
+
+    <TextView
+        android:id="@+id/mensajeTV"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="No posee reservas registradas"
+        />
         <android.support.v7.widget.CardView
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/card_view"
@@ -73,7 +80,11 @@
                     android:textStyle="bold"
                     android:textSize="@dimen/font_size"/>
 
-
+                <Button
+                    android:id="@+id/eliminarReservaB"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text="Quitar reserva"/>
             </LinearLayout>
         </android.support.v7.widget.CardView>
 
