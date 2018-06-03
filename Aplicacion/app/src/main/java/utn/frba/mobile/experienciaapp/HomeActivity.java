@@ -13,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import utn.frba.mobile.experienciaapp.agenda.AgendaActivity;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -47,6 +48,17 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             @Override
             public void onClick(View v) {
                 Intent i = new Intent(getBaseContext(), BuscarExperienciaActivity.class);
+                startActivity(i);
+            }
+        });
+
+        Button miAgendaaIB = (Button) findViewById(R.id.miAgendaaIB);
+
+
+        miAgendaaIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getBaseContext(), AgendaActivity.class);
                 startActivity(i);
             }
         });

@@ -62,4 +62,12 @@ public class Reserva {
     public void setTurista(Turista turista) {
         this.turista = turista;
     }
+
+    public FechaExperiencia getFechaExperiencia() {
+        return fechaExperiencia;
+    }
+
+    public void setFechaExperiencia(FechaExperiencia fechaExperiencia) {
+        this.fechaExperiencia = fechaExperiencia;
+    }
 }

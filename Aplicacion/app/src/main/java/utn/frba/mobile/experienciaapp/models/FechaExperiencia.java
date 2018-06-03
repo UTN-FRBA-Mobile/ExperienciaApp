@@ -3,7 +3,13 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class FechaExperiencia {
+    private static SimpleDateFormat dateFormat =new SimpleDateFormat("dd/MM/yyyy hh:mm");
+
     @SerializedName("id")
     @Expose
     private Integer id;
@@ -37,15 +43,19 @@ public class FechaExperiencia {
         return fecha_hora;
     }
 
-    public void setFechaHora(String apellido) {
+    public void setFechaHora(String fecha_hora) {
         this.fecha_hora = fecha_hora;
+    }
+
+    public void setFechaHora(Date fecha_hora) {
+        this.fecha_hora = dateFormat.format(fecha_hora);
     }
 
     public Experiencia getExperiencia() {
         return experiencia;
     }
 
-    public void setExperiencia(Experiencia dni) {
+    public void setExperiencia(Experiencia experiencia) {
         this.experiencia = experiencia;
     }
 }
