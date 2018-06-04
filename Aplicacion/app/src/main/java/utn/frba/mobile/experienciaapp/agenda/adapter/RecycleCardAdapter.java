@@ -14,7 +14,6 @@ import android.widget.Toast;
 import java.util.List;
 
 import utn.frba.mobile.experienciaapp.R;
-import utn.frba.mobile.experienciaapp.experiencia.ProductorActivity;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 import utn.frba.mobile.experienciaapp.models.Reserva;

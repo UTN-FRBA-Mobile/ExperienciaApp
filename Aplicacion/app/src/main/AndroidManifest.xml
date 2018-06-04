@@ -47,7 +47,7 @@
             android:label="@string/title_activity_test_slide"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".experiencia.ExperienciaDetailActivity" />
-        <activity android:name=".experiencia.ProductorActivity" />
+        <activity android:name=".Productor.ProductorActivity" />
         <activity android:name=".login.LoginActivity" />
         <activity
             android:name=".HomeActivity"
@@ -63,7 +63,9 @@
             android:name=".experiencia.filtros.FavoritosFiltro"
             android:label="@string/tituloPopupFavoritos"
             android:theme="@style/AppTheme.PopUp" />
-        <activity android:name=".agenda.AgendaActivity"></activity>
+        <activity android:name=".agenda.AgendaActivity" />
+        <activity android:name=".Productor.ProductorExperienciasActivity" />
+        <activity android:name=".Productor.ProductorGaleriaActivity"></activity>
     </application>
 
 </manifest>

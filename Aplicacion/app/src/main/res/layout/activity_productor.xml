@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="utn.frba.mobile.experienciaapp.experiencia.ProductorActivity">
+    tools:context="utn.frba.mobile.experienciaapp.Productor.ProductorActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -51,6 +51,7 @@
                     android:drawableLeft="@drawable/ic_local_phone_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="llamarTelefono"
                     android:textStyle="bold" />
 
                 <TextView
@@ -60,6 +61,7 @@
                     android:drawableLeft="@drawable/ic_phone_iphone_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="llamarCelular"
                     android:textStyle="bold" />
 
                 <TextView
@@ -69,6 +71,7 @@
                     android:drawableLeft="@drawable/ic_mail_outline_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="enviarEmail"
                     android:textStyle="bold" />
 
                 <TextView
