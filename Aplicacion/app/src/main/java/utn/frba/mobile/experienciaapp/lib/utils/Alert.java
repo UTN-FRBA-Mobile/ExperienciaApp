@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -27,6 +28,7 @@ public class Alert {
 
     private Dialog alert = null;
     protected Button alertCancel,alertAccept,alertExtra;
+    protected ImageView alertIVCancel,alertIVAccept;
     protected TextView title_tv,message_alert;
     private LinearLayout include_ll,edit_ll,loading_ll;
     private EditText et_edit;
@@ -184,6 +186,57 @@ public class Alert {
                 int height_px = (int) (250 * Resources.getSystem().getDisplayMetrics().density);
                 scrollView.getLayoutParams().height = height_px;
                 scrollView.setVisibility(View.VISIBLE);
+
+                include_ll = (LinearLayout) alert.findViewById(R.id.include_ll);
+
+                include_ll.addView(view);
+
+                alert.show();
+
+                //bug de tamaño
+                Display display =((WindowManager) act.getBaseContext().getSystemService(act.getBaseContext().WINDOW_SERVICE)).getDefaultDisplay();
+                int width  = display.getWidth();
+                int height = display.getHeight();
+                alert.getWindow().setLayout(width,height);
+
+
+            }
+        };
+
+        act.runOnUiThread(alert_ui);
+    }
+
+    public void ShowFilterView(final View view, final String title,final View.OnClickListener acceptOnclickListener,final boolean scrollViewFlag){
+        Runnable alert_ui = new Runnable() {
+            public void run() {
+                alert = new Dialog(act, R.style.CustomDialogTheme);
+                alert.setContentView(R.layout.dialog_alert_filter);
+                alert.setCancelable(false);
+
+                title_tv = (TextView) alert.findViewById(R.id.title_tv);
+                title_tv.setText(title);
+
+                message_alert = (TextView) alert.findViewById(R.id.message_alert);
+                message_alert.setVisibility(View.GONE);
+
+                alertIVCancel = (ImageView) alert.findViewById(R.id.button_cancel);
+                alertIVCancel.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        alert.dismiss();
+                    }
+                });
+
+                alertIVAccept = (ImageView) alert.findViewById(R.id.button_accept);
+                alertIVAccept.setOnClickListener(acceptOnclickListener);
+
+                ScrollView scrollView = (ScrollView) alert.findViewById(R.id.scroll_alert);
+                if(scrollViewFlag) {
+                    int height_px = (int) (250 * Resources.getSystem().getDisplayMetrics().density);
+                    scrollView.getLayoutParams().height = height_px;
+                }
+                scrollView.setVisibility(View.VISIBLE);
+
 
                 include_ll = (LinearLayout) alert.findViewById(R.id.include_ll);
 

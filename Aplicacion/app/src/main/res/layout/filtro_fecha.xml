@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="Selecciona un los intereses para buscar experiencias:" />
 
-    <!--<Button
+    <Button
         android:id="@+id/button_aplicar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,15 +25,14 @@
         android:minHeight="45dp"
         android:text="Aplicar"
         android:textColor="@android:color/white"
-        android:textSize="18sp" />-->
+        android:textSize="18sp" />
 
     <LinearLayout
         android:id="@+id/ll_intereses"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical|center_horizontal"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:orientation="vertical">
 
     </LinearLayout>
 

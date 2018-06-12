@@ -9,4 +9,5 @@
     <dimen name="txt_input">18dp</dimen>
     <dimen name="font_size">16sp</dimen>
     <dimen name="ic_general_size">30dp</dimen>
+    <dimen name="filter_text_view_accion">20sp</dimen>
 </resources>

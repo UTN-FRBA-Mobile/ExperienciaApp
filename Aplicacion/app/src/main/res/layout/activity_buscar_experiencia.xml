@@ -54,14 +54,6 @@
                 android:layout_marginRight="@dimen/filter_margins"/>
 
             <ImageView
-                android:id="@+id/favoritosIB"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:src="@drawable/ic_favoritos"
-                android:layout_marginLeft="@dimen/filter_margins"
-                android:layout_marginRight="@dimen/filter_margins"/>
-
-            <ImageView
                 android:id="@+id/distanciaIB"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"

@@ -14,34 +14,30 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
-import android.widget.Button;
+import android.widget.CalendarView;
+import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.google.android.gms.location.places.AutocompletePrediction;
 import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBufferResponse;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.gson.Gson;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,11 +81,15 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     public View distanciaView;
     public Alert interesesFilterAlert;
     public View interesesView;
+    public Alert fechaHoraFilterAlert;
+    public View fechaHoraView;
+    public Alert presupuestoFilterAlert;
+    public View presupuestoView;
 
     public Marker myLocation;
 
     //Filtros
-    private ImageView favoritosIB,interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
+    private ImageView interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
 
 
     @Override
@@ -135,12 +135,12 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 distanciaIB.performClick();
 
                 SharedPreferences.Editor editor = sharedPref.edit();
-                editor.putBoolean(getString(R.string.alert_inicio_buscar_experiencia), true);
+                editor.putBoolean(getString(R.string.key_alert_inicio_buscar_experiencia), true);
                 editor.commit();
             }
         };
 
-        boolean flagAlertInicio = sharedPref.getBoolean(getString(R.string.alert_inicio_buscar_experiencia),false);
+        boolean flagAlertInicio = sharedPref.getBoolean(getString(R.string.key_alert_inicio_buscar_experiencia),false);
         if(!flagAlertInicio)
             alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias.","Nuevas Experiencias",onClickListener,false);
     }
@@ -148,7 +148,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     @Override
     protected void onDestroy() {
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putBoolean(getString(R.string.alert_inicio_buscar_experiencia), false);
+        editor.putBoolean(getString(R.string.key_alert_inicio_buscar_experiencia), false);
         editor.commit();
         super.onDestroy();
     }
@@ -200,28 +200,30 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         // Construct a GeoDataClient for the Google Places API for Android.
         GeoDataClient mGeoDataClient = Places.getGeoDataClient(this, null);
 
-        // Retrieve the AutoCompleteTextView that will display Place suggestions.
-        AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView)distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
+        if(distanciaView != null) {
+            // Retrieve the AutoCompleteTextView that will display Place suggestions.
+            AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView) distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
 
-        LatLngBounds latLngBounds = null;
-        if(INIT_LOCATION != null){
-            //Circle circle = new Circle(5000, INIT_LOCATION);
-            //latLngBounds = circle.getBounds();
-            latLngBounds = new LatLngBounds(
-                    INIT_LOCATION,
-                    INIT_LOCATION
-            );
+            LatLngBounds latLngBounds = null;
+            if (INIT_LOCATION != null) {
+                //Circle circle = new Circle(5000, INIT_LOCATION);
+                //latLngBounds = circle.getBounds();
+                latLngBounds = new LatLngBounds(
+                        INIT_LOCATION,
+                        INIT_LOCATION
+                );
 
+            }
+
+
+            // Set up the adapter that will retrieve suggestions from the Places Geo Data Client.
+            PlaceAutocompleteAdapter mAdapter = new PlaceAutocompleteAdapter(
+                    this,
+                    mGeoDataClient,
+                    latLngBounds,
+                    null);
+            mAutocompleteView.setAdapter(mAdapter);
         }
-
-
-        // Set up the adapter that will retrieve suggestions from the Places Geo Data Client.
-        PlaceAutocompleteAdapter mAdapter = new PlaceAutocompleteAdapter(
-                this,
-                mGeoDataClient,
-                latLngBounds,
-                null);
-        mAutocompleteView.setAdapter(mAdapter);
     }
 
     private void AddRefreshMap(List<Experiencia> experienciaList){
@@ -286,11 +288,185 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     }
 
     private void inicializarFiltros(){
-        favoritosIB=(ImageView)findViewById(R.id.favoritosIB);
         interesesIB=(ImageView)findViewById(R.id.interesesIB);
         fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
         presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
         distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
+
+        presupuestoIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                presupuestoFilterAlert = new Alert(BuscarExperienciaActivity.this);
+                LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
+                ll_content.setOrientation(LinearLayout.VERTICAL);
+                ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+
+                LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                presupuestoView = inflater.inflate(R.layout.filtro_prespuesto, ll_content,false);
+
+                EditText precioInicioET = presupuestoView.findViewById(R.id.precioInicioET);
+                presupuestoFilterAlert.ShowFilterView(presupuestoView,"Presupuesto",null,false);
+            }
+        });
+
+        fechaHoraIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar calendar = Calendar.getInstance();
+                SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
+                SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm");
+                fechaHoraFilterAlert = new Alert(BuscarExperienciaActivity.this);
+
+                LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
+                ll_content.setOrientation(LinearLayout.VERTICAL);
+                ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+
+                LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                fechaHoraView = inflater.inflate(R.layout.filtro_fechahora, ll_content,false);
+
+                EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
+                fechaInicioET.setText(formatDate.format(calendar.getTime()));
+                fechaInicioET.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final CalendarView calendarView = new CalendarView(BuscarExperienciaActivity.this);
+                        calendarView.setDate(Calendar.getInstance().getTime().getTime());
+                        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+                            @Override
+                            public void onSelectedDayChange(CalendarView view, int year, int month,int dayOfMonth) {
+                                EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
+                                SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.set(year, month, dayOfMonth, 0, 0);
+                                fechaInicioET.setText(format.format(calendar.getTime()));
+                            }
+                        });
+                        final Alert alertCalendar = new Alert(BuscarExperienciaActivity.this);
+
+                        View.OnClickListener onClickListener = new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertCalendar.Dismiss();
+                            }
+                        };
+
+                        alertCalendar.ShowFilterView(calendarView,"Fecha Inicio",onClickListener,false);
+                    }
+                });
+
+                EditText horaInicioET = fechaHoraView.findViewById(R.id.horaInicioET);
+                horaInicioET.setText(formatTime.format(calendar.getTime()));
+                horaInicioET.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final Alert alertTimePicker = new Alert(BuscarExperienciaActivity.this);
+                        final TimePicker timePicker = new TimePicker(BuscarExperienciaActivity.this);
+                        timePicker.setIs24HourView(true);
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                            timePicker.setHour(Calendar.getInstance().get(Calendar.HOUR));
+                            timePicker.setMinute(Calendar.getInstance().get(Calendar.MINUTE));
+                        }else{
+                            timePicker.setCurrentHour(Calendar.getInstance().get(Calendar.HOUR));
+                            timePicker.setCurrentMinute(Calendar.getInstance().get(Calendar.MINUTE));
+                        }
+
+                        View.OnClickListener onClickListener = new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                EditText horaInicioET = fechaHoraView.findViewById(R.id.horaInicioET);
+                                SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                                Calendar calendar = Calendar.getInstance();
+
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
+                                    calendar.set(Calendar.MINUTE, timePicker.getMinute());
+                                }else{
+                                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
+                                    calendar.set(Calendar.MINUTE, timePicker.getCurrentMinute());
+                                }
+                                horaInicioET.setText(format.format(calendar.getTime()));
+                                alertTimePicker.Dismiss();
+                            }
+                        };
+
+                        alertTimePicker.ShowFilterView(timePicker,"Hora Inicio",onClickListener,false);
+                    }
+                });
+
+                EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
+                fechaFinET.setText(formatDate.format(calendar.getTime()));
+                fechaFinET.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final CalendarView calendarView = new CalendarView(BuscarExperienciaActivity.this);
+                        calendarView.setDate(Calendar.getInstance().getTime().getTime());
+                        calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
+                            @Override
+                            public void onSelectedDayChange(CalendarView view, int year, int month,int dayOfMonth) {
+                                EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
+                                SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.set(year, month, dayOfMonth, 0, 0);
+                                fechaFinET.setText(format.format(calendar.getTime()));
+                            }
+                        });
+                        final Alert alertCalendar = new Alert(BuscarExperienciaActivity.this);
+
+                        View.OnClickListener onClickListener = new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                alertCalendar.Dismiss();
+                            }
+                        };
+
+                        alertCalendar.ShowFilterView(calendarView,"Fecha Fin",onClickListener,false);
+                    }
+                });
+
+                Calendar calendarAux = calendar;
+                calendarAux.add(Calendar.HOUR, 3);
+                EditText horaFinET = fechaHoraView.findViewById(R.id.horaFinET);
+                horaFinET.setText(formatTime.format(calendarAux.getTime()));
+                horaFinET.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        final Alert alertTimePicker = new Alert(BuscarExperienciaActivity.this);
+                        final TimePicker timePicker = new TimePicker(BuscarExperienciaActivity.this);
+                        timePicker.setIs24HourView(true);
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                            timePicker.setHour(Calendar.getInstance().get(Calendar.HOUR));
+                            timePicker.setMinute(Calendar.getInstance().get(Calendar.MINUTE));
+                        }else{
+                            timePicker.setCurrentHour(Calendar.getInstance().get(Calendar.HOUR));
+                            timePicker.setCurrentMinute(Calendar.getInstance().get(Calendar.MINUTE));
+                        }
+
+                        View.OnClickListener onClickListener = new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                EditText horaFinET = fechaHoraView.findViewById(R.id.horaFinET);
+                                SimpleDateFormat format = new SimpleDateFormat("HH:mm");
+                                Calendar calendar = Calendar.getInstance();
+
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
+                                    calendar.set(Calendar.MINUTE, timePicker.getMinute());
+                                }else{
+                                    calendar.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
+                                    calendar.set(Calendar.MINUTE, timePicker.getCurrentMinute());
+                                }
+                                horaFinET.setText(format.format(calendar.getTime()));
+                                alertTimePicker.Dismiss();
+                            }
+                        };
+
+                        alertTimePicker.ShowFilterView(timePicker,"Hora Fin",onClickListener,false);
+                    }
+                });
+
+                fechaHoraFilterAlert.ShowFilterView(fechaHoraView,"Fecha y Hora",null,false);
+            }
+        });
 
         interesesIB.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -303,7 +479,6 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
                     LayoutInflater inflater = LayoutInflater.from(getBaseContext());
                     interesesView = inflater.inflate(R.layout.filtro_intereses, ll_content,false);
-                    SetAutocompleteUbicacionFromFilter();
 
                     LinearLayout ll_intereses = (LinearLayout) interesesView.findViewById(R.id.ll_intereses);
 
@@ -316,7 +491,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                         }
                     }
 
-                    interesesFilterAlert.ShowView(interesesView,"Intereses","Volver");
+                    interesesFilterAlert.ShowFilterView(interesesView,"Intereses",null,true);
                 }
         });
 
@@ -333,53 +508,39 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 distanciaView = inflater.inflate(R.layout.filtro_distancia, ll_content,false);
                 SetAutocompleteUbicacionFromFilter();
 
-                Button miUbicacionB = (Button) distanciaView.findViewById(R.id.miUbicacionB);
-                miUbicacionB.setOnClickListener(new View.OnClickListener() {
+                View.OnClickListener aceptOnclick = new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //View vParent = (View) v.getParent();
-
-                        if(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
-                            PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
-                        }
-
-                        if(!simpleLocation.hasLocationEnabled()){
-                            SimpleLocation.openSettings(BuscarExperienciaActivity.this);
-                        }
-
-                        if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
-                            final double latitude = simpleLocation.getLatitude();
-                            final double longitude = simpleLocation.getLongitude();
-
-                            EditText distanciaET = (EditText) distanciaView.findViewById(R.id.distanciaET);
-                            RADIO_DISTANCIA = distanciaET.getText().toString();
-
-                            distanciaFilterAlert.Loading();
-                            Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this,FILTER_EXPERIENCIAS));
-                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
-                        }
-                    }
-                });
-
-
-                ImageButton buscarUbicacionIB = (ImageButton) distanciaView.findViewById(R.id.buscarUbicacionIB);
-                buscarUbicacionIB.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        //View vParent = (View) v.getParent();
-
                         EditText distanciaET = (EditText) distanciaView.findViewById(R.id.distanciaET);
-                        RADIO_DISTANCIA = distanciaET.getText().toString();
-
+                        CheckBox miUbicacionB = (CheckBox) distanciaView.findViewById(R.id.miUbicacionB);
                         AutoCompleteTextView autoCompleteUbicacionATV = (AutoCompleteTextView) distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
                         String location = autoCompleteUbicacionATV.getText().toString();
-                        if(location!=null && !location.equals("")){
+                        if(miUbicacionB.isChecked()){
+                            if(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+                                PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
+                            }
+
+                            if(!simpleLocation.hasLocationEnabled()){
+                                SimpleLocation.openSettings(BuscarExperienciaActivity.this);
+                            }
+
+                            if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
+                                final double latitude = simpleLocation.getLatitude();
+                                final double longitude = simpleLocation.getLongitude();
+
+                                RADIO_DISTANCIA = distanciaET.getText().toString();
+
+                                distanciaFilterAlert.Loading();
+                                Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this,FILTER_EXPERIENCIAS));
+                                GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                            }
+                        }else if(location!=null && !location.equals("")){
                             new GeocoderTask(BuscarExperienciaActivity.this).execute(location);
                         }
                     }
-                });
+                };
 
-                distanciaFilterAlert.ShowView(distanciaView,"Ubicación","Volver");
+                distanciaFilterAlert.ShowFilterView(distanciaView,"Ubicación",aceptOnclick,false);
             }
         });
     }

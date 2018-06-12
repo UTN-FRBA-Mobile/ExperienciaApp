@@ -5,17 +5,17 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_mi_perfil"
-            android:icon="@drawable/ic_user"
-            android:title="Mi Perfil" />
+            android:id="@+id/nav_experiencias"
+            android:icon="@drawable/ic_experience_point"
+            android:title="Experiencias" />
         <item
-            android:id="@+id/nav_herramientas"
-            android:icon="@drawable/ic_tools"
-            android:title="Herramientas" />
-        <item
+            android:id="@+id/nav_mi_agenda"
+            android:icon="@drawable/ic_fecha_hora"
+            android:title="Mi Agenda" />
+        <!--<item
             android:id="@+id/nav_notificaciones"
             android:icon="@drawable/ic_notificaciones"
-            android:title="Notificaciones" />
+            android:title="Notificaciones" />-->
         <item
             android:id="@+id/nav_logout"
             android:icon="@drawable/ic_logout"
@@ -24,10 +24,6 @@
             android:id="@+id/nav_acerca"
             android:icon="@drawable/ic_about"
             android:title="Acerca de" />
-        <item
-            android:id="@+id/nav_settings"
-            android:icon="@android:drawable/ic_menu_manage"
-            android:title="Configuración" />
     </group>
 
 </menu>
