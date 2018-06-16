@@ -32,6 +32,7 @@ public class WSRetrofit {
     public static final String GET_INTERESES = "get_intereses";
     public static final String GET_PERFIL_PRODUCTOR = "get_productor_perfil";
     public static final String GET_PUNTOS_INTERES_OF_EXPERIENCIA = "get_puntos_interes_of_experiencia";
+    public static final String GET_EXPERIENCIAS_OF_PRODUCTOR = "get_experiencias_of_productor";
     public static final String GET_MI_PERFIL = "get_mi_perfil";
 
     public static final String FILTER_EXPERIENCIAS = "filter_experiencias";

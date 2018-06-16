@@ -45,4 +45,5 @@
     <string name="relax">Relax</string>
     <string name="tituloPopupFavoritos">Favoritos</string>
     <string name="title_activity_puntos_de_interes">PuntosDeInteresActivity</string>
+    <string name="title_activity_experiencias_productor">ExperienciasProductorActivity</string>
 </resources>

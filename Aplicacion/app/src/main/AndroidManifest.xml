@@ -23,7 +23,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".SplashActivity">
+        <activity android:name=".SplashActivity"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -57,11 +58,6 @@
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
             android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".experiencia.filtros.FavoritosFiltro"
@@ -71,6 +67,10 @@
         <activity
             android:name=".experiencia.puntos_interes.PuntosDeInteresActivity"
             android:label="@string/title_activity_puntos_de_interes"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".experiencia.productor.ExperienciasProductorActivity"
+            android:label="@string/title_activity_experiencias_productor"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

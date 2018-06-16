@@ -337,7 +337,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         });
     }
 
-    @SuppressLint("MissingPermission")
+
     private void inicializarFiltros() {
         interesesIB = (ImageView) findViewById(R.id.interesesIB);
         fechaHoraIB = (ImageView) findViewById(R.id.fechaHoraIB);

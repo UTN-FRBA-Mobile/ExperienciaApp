@@ -64,6 +64,15 @@ public class Experiencia extends ModeloGenerico implements CustomMarkerData {
         );
     }
 
+    public static Call<ResponseWS> GetAllOfProductor(int id_productor){
+        return WSRetrofit.getInstance().getInformationOf(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.GET_EXPERIENCIAS_OF_PRODUCTOR,
+                Integer.toString(id_productor)
+        );
+    }
+
     public static Call<ResponseWS> Filter(String intereses,
                                           String fecha_inicio,
                                           String fecha_fin,
