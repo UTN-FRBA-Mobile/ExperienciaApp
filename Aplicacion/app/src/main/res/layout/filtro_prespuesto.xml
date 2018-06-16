@@ -63,6 +63,12 @@
                 android:textSize="@dimen/filter_text_view_accion"/>
         </LinearLayout>
 
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/limpiarFiltroBT"
+            android:text="Limpiar Filtro"/>
+
 
     </LinearLayout>
 

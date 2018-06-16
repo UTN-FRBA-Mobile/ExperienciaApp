@@ -17,7 +17,8 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 
 public class GoogleMapsUtils {
 
-    private static final float DEFAULT_ZOOM = 15f;
+    public static final float DEFAULT_ZOOM = 15f;
+    public static final float FAR_ZOOM = 10f;
 
     public static SimpleLocation InitializeSimpleLocation(Activity activity){
         boolean requireFineGranularity = false;

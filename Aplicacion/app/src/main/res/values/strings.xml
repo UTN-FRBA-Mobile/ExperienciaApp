@@ -19,6 +19,15 @@
 
     //Preference keys
     <string name="key_alert_inicio_buscar_experiencia">key_alert_inicio_buscar_experiencia</string>
+    <string name="key_mi_posicion_filtro_value">key_mi_posicion_filtro_value</string>
+    <string name="key_last_lat">key_last_lat</string>
+    <string name="key_last_long">key_last_long</string>
+    <string name="key_distancia_filtro">key_distancia_filtro</string>
+    <string name="key_intereses_filtro">key_intereses_filtro</string>
+    <string name="key_fecha_hora_inicio_filtro">key_fecha_hora_inicio_filtro</string>
+    <string name="key_fecha_hora_fin_filtro">key_fecha_hora_fin_filtro</string>
+    <string name="key_presupuesto_inicio_filtro">key_presupuesto_inicio_filtro</string>
+    <string name="key_presupuesto_fin_filtro">key_presupuesto_fin_filtro</string>
     <string name="key_logedin">key_logedin</string>
 
 

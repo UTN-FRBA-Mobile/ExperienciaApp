@@ -13,20 +13,6 @@
         android:layout_height="wrap_content"
         android:text="Selecciona un los intereses para buscar experiencias:" />
 
-    <!--<Button
-        android:id="@+id/button_aplicar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="15dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="15dp"
-        android:background="@drawable/bg_button"
-        android:minHeight="45dp"
-        android:text="Aplicar"
-        android:textColor="@android:color/white"
-        android:textSize="18sp" />-->
-
     <LinearLayout
         android:id="@+id/ll_intereses"
         android:layout_width="match_parent"
@@ -36,5 +22,11 @@
         android:padding="10dp">
 
     </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/limpiarFiltroBT"
+        android:text="Limpiar Filtro"/>
 
 </LinearLayout>

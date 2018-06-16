@@ -49,6 +49,16 @@ public class Experiencia extends ModeloGenerico {
     private ArrayList<String> imagenes;
 
     //Metodos para WS
+
+    public static Call<ResponseWS> GetDetalle(int id){
+        return WSRetrofit.getInstance().getInformationOf(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.GET_DETALLE_EXPERIENCIA,
+                Integer.toString(id)
+        );
+    }
+
     public static Call<ResponseWS> Filter(String intereses,
                                           String fecha_inicio,
                                           String fecha_fin,

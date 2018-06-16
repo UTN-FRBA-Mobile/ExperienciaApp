@@ -28,6 +28,8 @@ public class WSRetrofit {
     public static final String KEY = "14E95809B4E10C0F03D386D0FA96273C759815E5C9204FE26885F25868D04A1D";
 
     public static final String GET_EXPERIENCIAS = "get_experiencias";
+    public static final String GET_DETALLE_EXPERIENCIA = "get_detalle_experiencia";
+    public static final String GET_INTERESES = "get_intereses";
     public static final String GET_PERFIL_PRODUCTOR = "get_productor_perfil";
     public static final String GET_PUNTOS_INTERES_OF_EXPERIENCIA = "get_puntos_interes_of_experiencia";
     public static final String GET_MI_PERFIL = "get_mi_perfil";
@@ -67,7 +69,7 @@ public class WSRetrofit {
 
     public static List<Object> ParseResult(ResponseWS responseWS){
         List<Object> results = new ArrayList<Object>();
-        if(!responseWS.getResult().isEmpty()) {
+        if(responseWS != null && !responseWS.getResult().isEmpty()) {
             for (Object obj:responseWS.getResult()) {
                 if(obj instanceof LinkedTreeMap) {
                     String className = ModeloGenerico.GetClassOf((LinkedTreeMap)obj);
@@ -155,15 +157,21 @@ public class WSRetrofit {
         return new Callback<ResponseWS>() {
             @Override
             public void onResponse(Call<ResponseWS> call, Response<ResponseWS> response) {
-                response.body().setResult(ParseResult(response.body()));
-                reciveResponseWS.ReciveResponseWS(response.body(),accion);
-                Log.e("RETROFIT","Success");
+                if(response != null && response.body() != null) {
+                    response.body().setResult(ParseResult(response.body()));
+                    reciveResponseWS.ReciveResponseWS(response.body(), accion);
+                    Log.e("RETROFIT", "Success");
+                }else{
+                    Log.e("RETROFIT","ERROR Response NULL");
+                    reciveResponseWS.ReciveResponseWS(null, accion);
+                }
             }
 
             @Override
             public void onFailure(Call<ResponseWS> call, Throwable t) {
                 // handle execution failures like no internet connectivity
                 Log.e("RETROFIT","ERROR");
+                reciveResponseWS.ReciveResponseWS(null, accion);
             }
         };
     }

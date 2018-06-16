@@ -60,6 +60,14 @@
                 android:src="@drawable/ic_cercania"
                 android:layout_marginLeft="@dimen/filter_margins"
                 android:layout_marginRight="@dimen/filter_margins"/>
+
+            <ImageView
+                android:id="@+id/limpiarFiltrosIB"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_clean_filters"
+                android:layout_marginLeft="@dimen/filter_margins"
+                android:layout_marginRight="@dimen/filter_margins"/>
         </LinearLayout>
 
     </android.support.design.widget.AppBarLayout>

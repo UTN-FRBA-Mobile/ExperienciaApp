@@ -3,6 +3,10 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+
 public class Productor {
 
     @SerializedName("id")
@@ -56,6 +60,16 @@ public class Productor {
     @SerializedName("habilitado")
     @Expose
     private String habilitado;
+
+    //Metodos para WS
+    public static Call<ResponseWS> GetPerfil(int id){
+        return WSRetrofit.getInstance().getInformationOf(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.GET_DETALLE_EXPERIENCIA,
+                Integer.toString(id)
+        );
+    }
 
     public Integer getId() {
         return id;

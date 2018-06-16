@@ -1,11 +1,14 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
@@ -16,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
 import android.widget.CalendarView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -35,16 +39,20 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.gson.Gson;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import im.delight.android.location.SimpleLocation;
 import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.lib.errors.ErrorTreatment;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GeocoderTask;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
@@ -58,7 +66,9 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.Interes;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class BuscarExperienciaActivity extends BaseActivityWithToolBar implements OnMapReadyCallback,ReciveResponseWS,ReciveAdress {
+import static utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils.FAR_ZOOM;
+
+public class BuscarExperienciaActivity extends BaseActivityWithToolBar implements OnMapReadyCallback, ReciveResponseWS, ReciveAdress {
 
     //TODO: PAsar a preference store
     public static String RADIO_DISTANCIA = "10";
@@ -66,6 +76,9 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
     private static final int GET_EXPERIENCIAS = 1;
     private static final int FILTER_EXPERIENCIAS = 2;
+    private static final int GET_INTERESES = 3;
+
+    private static final String MY_PREFERECES = "BuscarExperienciaActivity";
 
     private static final String TAG = "BuscarExperienciaAct";
     private SharedPreferences sharedPref;
@@ -81,27 +94,37 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     public View distanciaView;
     public Alert interesesFilterAlert;
     public View interesesView;
+    public Set<Integer> interesesFiltrados = new HashSet<>();
     public Alert fechaHoraFilterAlert;
     public View fechaHoraView;
     public Alert presupuestoFilterAlert;
     public View presupuestoView;
 
+    public SimpleDateFormat mySqlDateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public SimpleDateFormat localDateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+    public SimpleDateFormat localDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+    public SimpleDateFormat localTimeFormat = new SimpleDateFormat("HH:mm");
+
     public Marker myLocation;
 
     //Filtros
-    private ImageView interesesIB,fechaHoraIB,presupuestoIB,distanciaIB;
+    private ImageView interesesIB, fechaHoraIB, presupuestoIB, distanciaIB,limpiarFiltrosIB;
 
+    //PreferenceValues
+    boolean flagMiPosicionFiltro,flagAlertInicio = false;
+    String key_last_lat,key_last_long,key_distancia_filtro,key_intereses_filtro,key_fecha_hora_inicio_filtro,key_fecha_hora_fin_filtro,key_presupuesto_inicio_filtro,key_presupuesto_fin_filtro = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         //experiencias = MockExperiences();//TODO: Borrar, solo para testing
-        intereses = MockIntereses();//TODO: Borrar, solo para testing
+        //intereses = MockIntereses();//TODO: Borrar, solo para testing
+        Interes.GetIntereses().enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, GET_INTERESES));
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buscar_experiencia);
         setSupportActionBar((Toolbar) findViewById(R.id.main_toolbar));
 
-        sharedPref = BuscarExperienciaActivity.this.getPreferences(Context.MODE_PRIVATE);
+        sharedPref = getSharedPreferences(MY_PREFERECES,Context.MODE_PRIVATE);
 
         AddBackButtonToToolBar();
         simpleLocation = GoogleMapsUtils.InitializeSimpleLocation(this);
@@ -115,11 +138,11 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
         SetListOfExperiencias(experiencias);
 
-        if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()){
+        if (PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
             final double latitude = simpleLocation.getLatitude();
             final double longitude = simpleLocation.getLongitude();
 
-            INIT_LOCATION = new LatLng(latitude,longitude);
+            INIT_LOCATION = new LatLng(latitude, longitude);
         }
     }
 
@@ -127,6 +150,27 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     protected void onStart() {
         super.onStart();
 
+        RefreshPreferenceValues();
+        if (!flagAlertInicio)
+            ShowPedirUbicacionAlert(true);
+    }
+
+    public void RefreshPreferenceValues(){
+        //Inicializar valores de filtros
+        flagAlertInicio = sharedPref.getBoolean(getString(R.string.key_alert_inicio_buscar_experiencia), false);
+        flagMiPosicionFiltro = sharedPref.getBoolean(getString(R.string.key_mi_posicion_filtro_value), false);
+
+        key_last_lat = sharedPref.getString(getString(R.string.key_last_lat), "");
+        key_last_long = sharedPref.getString(getString(R.string.key_last_long), "");
+        key_distancia_filtro = sharedPref.getString(getString(R.string.key_distancia_filtro), "");
+        key_intereses_filtro = sharedPref.getString(getString(R.string.key_intereses_filtro), "");
+        key_fecha_hora_inicio_filtro = sharedPref.getString(getString(R.string.key_fecha_hora_inicio_filtro), "");
+        key_fecha_hora_fin_filtro = sharedPref.getString(getString(R.string.key_fecha_hora_fin_filtro), "");
+        key_presupuesto_inicio_filtro = sharedPref.getString(getString(R.string.key_presupuesto_inicio_filtro), "");
+        key_presupuesto_fin_filtro = sharedPref.getString(getString(R.string.key_presupuesto_fin_filtro), "");
+    }
+
+    public void ShowPedirUbicacionAlert(boolean inicio){
         final Alert alertInicio = new Alert(this);
         View.OnClickListener onClickListener = new View.OnClickListener() {
             @Override
@@ -136,13 +180,15 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
                 SharedPreferences.Editor editor = sharedPref.edit();
                 editor.putBoolean(getString(R.string.key_alert_inicio_buscar_experiencia), true);
-                editor.commit();
+                editor.apply();
             }
         };
 
-        boolean flagAlertInicio = sharedPref.getBoolean(getString(R.string.key_alert_inicio_buscar_experiencia),false);
-        if(!flagAlertInicio)
-            alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias.","Nuevas Experiencias",onClickListener,false);
+        if(inicio) {
+            alertInicio.ShowConfirmation("Indicanos donde te gustaria encontrar nuevas experiencias, puedes usar distintas combinaciones de filtros.", "Nuevas Experiencias", onClickListener, false);
+        }else{
+            alertInicio.ShowConfirmation("Para filtrar experiencias tenes que seleccionar antes una ubicación, y así combinar filtros.", "Nuevas Experiencias", onClickListener, false);
+        }
     }
 
     @Override
@@ -153,7 +199,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         super.onDestroy();
     }
 
-    public Map<Integer,Marker> markerList = new HashMap<>();
+    public Map<Integer, Marker> markerList = new HashMap<>();
 
     private void SetListOfExperiencias(List<Experiencia> listExperiencias) {
         TextView t = (TextView) findViewById(R.id.listadoExperienciasTV);
@@ -164,11 +210,11 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Experiencia experiencia = (Experiencia) ((ListView) parent).getAdapter().getItem(position);
-                if(experiencia != null && experiencia.getLongitud() != null && experiencia.getLatitud() != null){
-                    GoogleMapsUtils.GoToLocationInMap(mMap,experiencia.getLatitud(),experiencia.getLongitud() ,null);
+                if (experiencia != null && experiencia.getLongitud() != null && experiencia.getLatitud() != null) {
+                    GoogleMapsUtils.GoToLocationInMap(mMap, experiencia.getLatitud(), experiencia.getLongitud(), null);
                     mLayout.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    markerList.get(experiencia.getId()).showInfoWindow();
                 }
-                Toast.makeText(BuscarExperienciaActivity.this, "onItemClick", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -196,11 +242,11 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         });
     }
 
-    private void SetAutocompleteUbicacionFromFilter(){
+    private void SetAutocompleteUbicacionFromFilter() {
         // Construct a GeoDataClient for the Google Places API for Android.
         GeoDataClient mGeoDataClient = Places.getGeoDataClient(this, null);
 
-        if(distanciaView != null) {
+        if (distanciaView != null) {
             // Retrieve the AutoCompleteTextView that will display Place suggestions.
             AutoCompleteTextView mAutocompleteView = (AutoCompleteTextView) distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
 
@@ -226,72 +272,93 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         }
     }
 
-    private void AddRefreshMap(List<Experiencia> experienciaList){
-        if(!experienciaList.isEmpty()){
-            for(Map.Entry<Integer, Marker> markerEntry : markerList.entrySet()){
-                markerEntry.getValue().remove();
-            }
+    private void AddRefreshMap(List<Experiencia> experienciaList) {
+        for (Map.Entry<Integer, Marker> markerEntry : markerList.entrySet()) {
+            markerEntry.getValue().remove();
         }
 
-        if(!experienciaList.isEmpty()){
-            for(Experiencia experiencia : experienciaList){
+        if (!experienciaList.isEmpty()) {
+            for (Experiencia experiencia : experienciaList) {
                 Marker marker = GoogleMapsUtils.AddMarkerOptionsToMap(
                         mMap,
                         GoogleMapsUtils.GetMarkerOptionsFor(experiencia),
                         R.drawable.ic_experience_point,
                         false
                 );
-                markerList.put(experiencia.getId(),marker);
+                markerList.put(experiencia.getId(), marker);
             }
-
-            //GoogleMapsUtils.GoToLocationInMap(mMap,experiencias.get(0).getLatitud(),experiencias.get(0).getLongitud(),null);
         }
     }
 
-    private void SetMyLocationButton(){
+    private void SetMyLocationButton() {
         ImageView myLocationButton = (ImageView) findViewById(R.id.myLocationButton);
         myLocationButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+                if (PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)) {
                     if (!simpleLocation.hasLocationEnabled()) {
                         SimpleLocation.openSettings(BuscarExperienciaActivity.this);
-                    }else{
+                    } else {
                         final double latitude = simpleLocation.getLatitude();
                         final double longitude = simpleLocation.getLongitude();
 
-                        if(mMap != null){
+                        if (mMap != null) {
                             simpleLocation.setListener(new SimpleLocation.Listener() {
 
                                 public void onPositionChanged() {
                                     final double latitude = simpleLocation.getLatitude();
                                     final double longitude = simpleLocation.getLongitude();
-                                    Toast.makeText(BuscarExperienciaActivity.this, latitude+","+longitude, Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(BuscarExperienciaActivity.this, latitude + "," + longitude, Toast.LENGTH_SHORT).show();
                                     myLocation.remove();
-                                    myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
-                                    GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                                    myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap, GoogleMapsUtils.GetMarkerOptionsFor(latitude, longitude), R.drawable.ic_user_point, false);
+                                    GoogleMapsUtils.GoToLocationInMap(mMap, latitude, longitude, null);
                                 }
 
                             });
-                            if(myLocation != null)
+                            if (myLocation != null)
                                 myLocation.remove();
 
-                            myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap,GoogleMapsUtils.GetMarkerOptionsFor(latitude,longitude),R.drawable.ic_user_point,false);
-                            GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
+                            myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap, GoogleMapsUtils.GetMarkerOptionsFor(latitude, longitude), R.drawable.ic_user_point, false);
+                            GoogleMapsUtils.GoToLocationInMap(mMap, latitude, longitude, null);
                         }
                     }
-                }else{
+                } else {
                     PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
                 }
             }
         });
     }
 
-    private void inicializarFiltros(){
-        interesesIB=(ImageView)findViewById(R.id.interesesIB);
-        fechaHoraIB=(ImageView)findViewById(R.id.fechaHoraIB);
-        presupuestoIB=(ImageView)findViewById(R.id.presupuestoIB);
-        distanciaIB=(ImageView)findViewById(R.id.distanciaIB);
+    private void inicializarFiltros() {
+        interesesIB = (ImageView) findViewById(R.id.interesesIB);
+        fechaHoraIB = (ImageView) findViewById(R.id.fechaHoraIB);
+        presupuestoIB = (ImageView) findViewById(R.id.presupuestoIB);
+        distanciaIB = (ImageView) findViewById(R.id.distanciaIB);
+        limpiarFiltrosIB = (ImageView) findViewById(R.id.limpiarFiltrosIB);
+
+        limpiarFiltrosIB.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final Alert limpiarFiltrosAlert = new Alert(BuscarExperienciaActivity.this);
+
+                View.OnClickListener aceptOnClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(getString(R.string.key_presupuesto_inicio_filtro), "");
+                        editor.putString(getString(R.string.key_presupuesto_fin_filtro), "");
+                        editor.putString(getString(R.string.key_intereses_filtro), "");
+                        editor.putString(getString(R.string.key_fecha_hora_inicio_filtro), "");
+                        editor.putString(getString(R.string.key_fecha_hora_fin_filtro), "");
+                        editor.apply();
+                        RefreshPreferenceValues();
+                        limpiarFiltrosAlert.Dismiss();
+                    }
+                };
+
+                limpiarFiltrosAlert.ShowConfirmation("¿Desea eliminar las preferenias de los filtros?","Limpiar Filtros",aceptOnClickListener,true);
+            }
+        });
 
         presupuestoIB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -302,10 +369,48 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
 
                 LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-                presupuestoView = inflater.inflate(R.layout.filtro_prespuesto, ll_content,false);
+                presupuestoView = inflater.inflate(R.layout.filtro_prespuesto, ll_content, false);
 
                 EditText precioInicioET = presupuestoView.findViewById(R.id.precioInicioET);
-                presupuestoFilterAlert.ShowFilterView(presupuestoView,"Presupuesto",null,false);
+                EditText precioFinET = presupuestoView.findViewById(R.id.precioFinET);
+                precioInicioET.setText(key_presupuesto_inicio_filtro);
+                precioFinET.setText(key_presupuesto_fin_filtro);
+
+                View.OnClickListener aceptOnclick = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EditText precioInicioET = presupuestoView.findViewById(R.id.precioInicioET);
+                        EditText precioFinET = presupuestoView.findViewById(R.id.precioFinET);
+                        String precioInicio = precioInicioET.getText().toString();
+                        String precioFin = precioFinET.getText().toString();
+
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(getString(R.string.key_presupuesto_inicio_filtro), precioInicio);
+                        editor.putString(getString(R.string.key_presupuesto_fin_filtro), precioFin);
+                        editor.apply();
+                        RefreshPreferenceValues();
+
+                        if(key_last_lat.equals("") || key_last_long.equals("") || key_distancia_filtro.equals("")){
+                            ShowPedirUbicacionAlert(false);
+                            presupuestoFilterAlert.Dismiss();
+                        }else {
+                            presupuestoFilterAlert.Loading();
+                            Experiencia.Filter(key_intereses_filtro, key_fecha_hora_inicio_filtro, key_fecha_hora_fin_filtro, precioInicio, precioFin, key_last_lat, key_last_long, key_distancia_filtro).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, FILTER_EXPERIENCIAS));
+                        }
+                    }
+                };
+
+                presupuestoView.findViewById(R.id.limpiarFiltroBT).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EditText precioInicioET = presupuestoView.findViewById(R.id.precioInicioET);
+                        EditText precioFinET = presupuestoView.findViewById(R.id.precioFinET);
+                        precioInicioET.setText("");
+                        precioFinET.setText("");
+                    }
+                });
+
+                presupuestoFilterAlert.ShowFilterView(presupuestoView, "Presupuesto", aceptOnclick, false);
             }
         });
 
@@ -313,8 +418,6 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
             @Override
             public void onClick(View v) {
                 Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
-                SimpleDateFormat formatTime = new SimpleDateFormat("HH:mm");
                 fechaHoraFilterAlert = new Alert(BuscarExperienciaActivity.this);
 
                 LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
@@ -322,10 +425,10 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
 
                 LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-                fechaHoraView = inflater.inflate(R.layout.filtro_fechahora, ll_content,false);
+                fechaHoraView = inflater.inflate(R.layout.filtro_fechahora, ll_content, false);
 
-                EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
-                fechaInicioET.setText(formatDate.format(calendar.getTime()));
+                final EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
+                fechaInicioET.setText(localDateFormat.format(calendar.getTime()));
                 fechaInicioET.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -333,7 +436,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                         calendarView.setDate(Calendar.getInstance().getTime().getTime());
                         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
                             @Override
-                            public void onSelectedDayChange(CalendarView view, int year, int month,int dayOfMonth) {
+                            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
                                 EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
                                 SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                                 Calendar calendar = Calendar.getInstance();
@@ -350,22 +453,22 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                             }
                         };
 
-                        alertCalendar.ShowFilterView(calendarView,"Fecha Inicio",onClickListener,false);
+                        alertCalendar.ShowFilterView(calendarView, "Fecha Inicio", onClickListener, false);
                     }
                 });
 
-                EditText horaInicioET = fechaHoraView.findViewById(R.id.horaInicioET);
-                horaInicioET.setText(formatTime.format(calendar.getTime()));
+                final EditText horaInicioET = fechaHoraView.findViewById(R.id.horaInicioET);
+                horaInicioET.setText(localTimeFormat.format(calendar.getTime()));
                 horaInicioET.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         final Alert alertTimePicker = new Alert(BuscarExperienciaActivity.this);
                         final TimePicker timePicker = new TimePicker(BuscarExperienciaActivity.this);
                         timePicker.setIs24HourView(true);
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {//6.0
                             timePicker.setHour(Calendar.getInstance().get(Calendar.HOUR));
                             timePicker.setMinute(Calendar.getInstance().get(Calendar.MINUTE));
-                        }else{
+                        } else {
                             timePicker.setCurrentHour(Calendar.getInstance().get(Calendar.HOUR));
                             timePicker.setCurrentMinute(Calendar.getInstance().get(Calendar.MINUTE));
                         }
@@ -377,10 +480,10 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                                 SimpleDateFormat format = new SimpleDateFormat("HH:mm");
                                 Calendar calendar = Calendar.getInstance();
 
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {//6.0
                                     calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
                                     calendar.set(Calendar.MINUTE, timePicker.getMinute());
-                                }else{
+                                } else {
                                     calendar.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
                                     calendar.set(Calendar.MINUTE, timePicker.getCurrentMinute());
                                 }
@@ -389,12 +492,12 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                             }
                         };
 
-                        alertTimePicker.ShowFilterView(timePicker,"Hora Inicio",onClickListener,false);
+                        alertTimePicker.ShowFilterView(timePicker, "Hora Inicio", onClickListener, false);
                     }
                 });
 
-                EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
-                fechaFinET.setText(formatDate.format(calendar.getTime()));
+                final EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
+                fechaFinET.setText(localDateFormat.format(calendar.getTime()));
                 fechaFinET.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -402,7 +505,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                         calendarView.setDate(Calendar.getInstance().getTime().getTime());
                         calendarView.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
                             @Override
-                            public void onSelectedDayChange(CalendarView view, int year, int month,int dayOfMonth) {
+                            public void onSelectedDayChange(CalendarView view, int year, int month, int dayOfMonth) {
                                 EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
                                 SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                                 Calendar calendar = Calendar.getInstance();
@@ -419,24 +522,24 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                             }
                         };
 
-                        alertCalendar.ShowFilterView(calendarView,"Fecha Fin",onClickListener,false);
+                        alertCalendar.ShowFilterView(calendarView, "Fecha Fin", onClickListener, false);
                     }
                 });
 
                 Calendar calendarAux = calendar;
                 calendarAux.add(Calendar.HOUR, 3);
-                EditText horaFinET = fechaHoraView.findViewById(R.id.horaFinET);
-                horaFinET.setText(formatTime.format(calendarAux.getTime()));
+                final EditText horaFinET = fechaHoraView.findViewById(R.id.horaFinET);
+                horaFinET.setText(localTimeFormat.format(calendarAux.getTime()));
                 horaFinET.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         final Alert alertTimePicker = new Alert(BuscarExperienciaActivity.this);
                         final TimePicker timePicker = new TimePicker(BuscarExperienciaActivity.this);
                         timePicker.setIs24HourView(true);
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {//6.0
                             timePicker.setHour(Calendar.getInstance().get(Calendar.HOUR));
                             timePicker.setMinute(Calendar.getInstance().get(Calendar.MINUTE));
-                        }else{
+                        } else {
                             timePicker.setCurrentHour(Calendar.getInstance().get(Calendar.HOUR));
                             timePicker.setCurrentMinute(Calendar.getInstance().get(Calendar.MINUTE));
                         }
@@ -448,10 +551,10 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                                 SimpleDateFormat format = new SimpleDateFormat("HH:mm");
                                 Calendar calendar = Calendar.getInstance();
 
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M){//6.0
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {//6.0
                                     calendar.set(Calendar.HOUR_OF_DAY, timePicker.getHour());
                                     calendar.set(Calendar.MINUTE, timePicker.getMinute());
-                                }else{
+                                } else {
                                     calendar.set(Calendar.HOUR_OF_DAY, timePicker.getCurrentHour());
                                     calendar.set(Calendar.MINUTE, timePicker.getCurrentMinute());
                                 }
@@ -460,39 +563,141 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                             }
                         };
 
-                        alertTimePicker.ShowFilterView(timePicker,"Hora Fin",onClickListener,false);
+                        alertTimePicker.ShowFilterView(timePicker, "Hora Fin", onClickListener, false);
                     }
                 });
 
-                fechaHoraFilterAlert.ShowFilterView(fechaHoraView,"Fecha y Hora",null,false);
+                View.OnClickListener aceptOnclick = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        EditText fechaInicioET = fechaHoraView.findViewById(R.id.fechaInicioET);
+                        EditText horaInicioET = fechaHoraView.findViewById(R.id.horaInicioET);
+                        EditText fechaFinET = fechaHoraView.findViewById(R.id.fechaFinET);
+                        EditText horaFinET = fechaHoraView.findViewById(R.id.horaFinET);
+
+                        String fechaInicio = fechaInicioET.getText().toString();
+                        String horaInicio = horaInicioET.getText().toString();
+                        String fechaFin = fechaFinET.getText().toString();
+                        String horaFin = horaFinET.getText().toString();
+
+                        String fechaFiltroInicio = "";
+                        String fechaFiltroFin = "";
+
+                        try {
+                            fechaFiltroInicio = mySqlDateTimeFormat.format(localDateTimeFormat.parse(fechaInicio + "" + horaInicio));
+                            fechaFiltroFin = mySqlDateTimeFormat.format(localDateTimeFormat.parse(fechaFin + "" + horaFin));
+                        } catch (ParseException e) {
+                            ErrorTreatment.TreatExeption(e);
+                        }
+
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(getString(R.string.key_fecha_hora_inicio_filtro), fechaFiltroInicio);
+                        editor.putString(getString(R.string.key_fecha_hora_fin_filtro), fechaFiltroFin);
+                        editor.apply();
+                        RefreshPreferenceValues();
+
+                        if(key_last_lat.equals("") || key_last_long.equals("") || key_distancia_filtro.equals("")){
+                            ShowPedirUbicacionAlert(false);
+                            fechaHoraFilterAlert.Dismiss();
+                        }else {
+                            fechaHoraFilterAlert.Loading();
+                            Experiencia.Filter(key_intereses_filtro, fechaFiltroInicio, fechaFiltroFin, key_presupuesto_inicio_filtro, key_presupuesto_fin_filtro, key_last_lat, key_last_long, key_distancia_filtro).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, FILTER_EXPERIENCIAS));
+                        }
+                    }
+                };
+
+                fechaHoraView.findViewById(R.id.limpiarFiltroBT).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        fechaInicioET.setText("");
+                        horaInicioET.setText("");
+                        fechaFinET.setText("");
+                        horaFinET.setText("");
+                    }
+                });
+
+                fechaHoraFilterAlert.ShowFilterView(fechaHoraView, "Fecha y Hora", aceptOnclick, false);
             }
         });
 
         interesesIB.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    interesesFilterAlert = new Alert(BuscarExperienciaActivity.this);
+            @Override
+            public void onClick(View v) {
+                interesesFilterAlert = new Alert(BuscarExperienciaActivity.this);
 
-                    LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
-                    ll_content.setOrientation(LinearLayout.VERTICAL);
-                    ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+                LinearLayout ll_content = new LinearLayout(BuscarExperienciaActivity.this);
+                ll_content.setOrientation(LinearLayout.VERTICAL);
+                ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
 
-                    LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-                    interesesView = inflater.inflate(R.layout.filtro_intereses, ll_content,false);
+                LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                interesesView = inflater.inflate(R.layout.filtro_intereses, ll_content, false);
 
-                    LinearLayout ll_intereses = (LinearLayout) interesesView.findViewById(R.id.ll_intereses);
+                final LinearLayout ll_intereses = (LinearLayout) interesesView.findViewById(R.id.ll_intereses);
 
-                    if(!intereses.isEmpty()){
-                        for(Interes interes : intereses){
-                            Switch interesSw = new Switch(BuscarExperienciaActivity.this);
-                            interesSw.setText(interes.getNombre());
-                            interesSw.setPadding(0,0,0,5);
-                            ll_intereses.addView(interesSw);
+                if (!intereses.isEmpty()) {
+                    for (Interes interes : intereses) {
+                        Switch interesSw = new Switch(BuscarExperienciaActivity.this);
+                        interesSw.setText(interes.getNombre()+" "+interes.getId());
+                        interesSw.setLabelFor(interes.getId());
+                        interesSw.setPadding(0, 0, 0, 5);
+                        if(Interes.IsInCadena(interes.getId(),sharedPref.getString(getString(R.string.key_intereses_filtro),""))){
+                            interesesFiltrados.add(interes.getId());
+                            interesSw.setChecked(true);
+                        }
+                        interesSw.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                if(isChecked){
+                                    interesesFiltrados.add(buttonView.getLabelFor());
+                                }else{
+                                    interesesFiltrados.remove(new Integer(buttonView.getLabelFor()));
+                                }
+                            }
+                        });
+                        ll_intereses.addView(interesSw);
+                    }
+                }
+
+                View.OnClickListener aceptOnclick = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        String cadentaDeIntereses = "0";
+                        if(interesesFiltrados != null)
+                            for(Integer id_interes : interesesFiltrados)
+                                cadentaDeIntereses += "," + id_interes.toString();
+
+                        if(cadentaDeIntereses.equals("0"))
+                            cadentaDeIntereses = "";
+
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putString(getString(R.string.key_intereses_filtro), cadentaDeIntereses);
+                        editor.apply();
+                        RefreshPreferenceValues();
+
+                        if(key_last_lat.equals("") || key_last_long.equals("") || key_distancia_filtro.equals("")){
+                            ShowPedirUbicacionAlert(false);
+                            interesesFilterAlert.Dismiss();
+                        }else {
+                            interesesFilterAlert.Loading();
+                            Experiencia.Filter(cadentaDeIntereses, "", "", "", "", key_last_lat, key_last_long, key_distancia_filtro).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, FILTER_EXPERIENCIAS));
                         }
                     }
+                };
 
-                    interesesFilterAlert.ShowFilterView(interesesView,"Intereses",null,true);
-                }
+                interesesView.findViewById(R.id.limpiarFiltroBT).setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        for(int i=0;i<ll_intereses.getChildCount();i++){
+                            View view = ll_intereses.getChildAt(i);
+                            if(view instanceof Switch){
+                                ((Switch) view).setChecked(false);
+                            }
+                        }
+                    }
+                });
+
+                interesesFilterAlert.ShowFilterView(interesesView, "Intereses", aceptOnclick, true);
+            }
         });
 
         distanciaIB.setOnClickListener(new View.OnClickListener() {
@@ -505,8 +710,11 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 ll_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
 
                 LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-                distanciaView = inflater.inflate(R.layout.filtro_distancia, ll_content,false);
+                distanciaView = inflater.inflate(R.layout.filtro_distancia, ll_content, false);
                 SetAutocompleteUbicacionFromFilter();
+
+                CheckBox miUbicacionB = (CheckBox) distanciaView.findViewById(R.id.miUbicacionB);
+                miUbicacionB.setChecked(flagMiPosicionFiltro);
 
                 View.OnClickListener aceptOnclick = new View.OnClickListener() {
                     @Override
@@ -515,23 +723,33 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                         CheckBox miUbicacionB = (CheckBox) distanciaView.findViewById(R.id.miUbicacionB);
                         AutoCompleteTextView autoCompleteUbicacionATV = (AutoCompleteTextView) distanciaView.findViewById(R.id.autoCompleteUbicacionATV);
                         String location = autoCompleteUbicacionATV.getText().toString();
-                        if(miUbicacionB.isChecked()){
-                            if(!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)){
+                        if (miUbicacionB.isChecked()) {
+                            if (!PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this)) {
                                 PermisionsUtils.requestLocationPermissions(BuscarExperienciaActivity.this);
                             }
 
-                            if(!simpleLocation.hasLocationEnabled()){
+                            if (!simpleLocation.hasLocationEnabled()) {
                                 SimpleLocation.openSettings(BuscarExperienciaActivity.this);
                             }
 
-                            if(PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
+                            if (PermisionsUtils.canAccessLocation(BuscarExperienciaActivity.this) && simpleLocation.hasLocationEnabled()) {
                                 final double latitude = simpleLocation.getLatitude();
                                 final double longitude = simpleLocation.getLongitude();
 
                                 RADIO_DISTANCIA = distanciaET.getText().toString();
 
                                 distanciaFilterAlert.Loading();
-                                Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this,FILTER_EXPERIENCIAS));
+
+                                SharedPreferences.Editor editor = sharedPref.edit();
+                                editor.putString(getString(R.string.key_last_lat), Double.toString(latitude));
+                                editor.putString(getString(R.string.key_last_long), Double.toString(longitude));
+                                editor.putString(getString(R.string.key_distancia_filtro), RADIO_DISTANCIA);
+                                editor.putBoolean(getString(R.string.key_mi_posicion_filtro_value), true);
+                                editor.apply();
+                                RefreshPreferenceValues();
+
+                                Experiencia.Filter(sharedPref.getString(getString(R.string.key_intereses_filtro), ""), "", "", "", "", Double.toString(latitude), Double.toString(longitude), RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, FILTER_EXPERIENCIAS));
+                                mMap.setMyLocationEnabled(true);
                                 GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
                             }
                         }else if(location!=null && !location.equals("")){
@@ -695,7 +913,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
         switch(accion){
             case GET_EXPERIENCIAS:{
-                if(responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
                     experiencias.clear();
                     experiencias = Experiencia.addResponseToList(experiencias,responseWS);
                 }else{
@@ -704,8 +922,18 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 break;
             }
 
+            case GET_INTERESES:{
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Interes){
+                    intereses.clear();
+                    intereses = Interes.addResponseToList(intereses,responseWS);
+                }else{
+                    intereses = new ArrayList<>();
+                }
+                break;
+            }
+
             case FILTER_EXPERIENCIAS:{
-                if(responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Experiencia){
                     experiencias.clear();
                     experiencias = Experiencia.addResponseToList(experiencias,responseWS);
                 }else{
@@ -714,10 +942,29 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
 
                 SetListOfExperiencias(experiencias);
                 AddRefreshMap(experiencias);
-                if(distanciaFilterAlert.IsActive()) {
+                if(distanciaFilterAlert != null && distanciaFilterAlert.IsActive()) {
                     distanciaFilterAlert.DismissLoading();
                     distanciaFilterAlert.Dismiss();
                 }
+                if(interesesFilterAlert != null && interesesFilterAlert.IsActive()) {
+                    interesesFilterAlert.DismissLoading();
+                    interesesFilterAlert.Dismiss();
+                    GoogleMapsUtils.GoToLocationInMap(mMap,Double.parseDouble(key_last_lat),Double.parseDouble(key_last_long),FAR_ZOOM);
+                }
+                if(fechaHoraFilterAlert != null && fechaHoraFilterAlert.IsActive()) {
+                    fechaHoraFilterAlert.DismissLoading();
+                    fechaHoraFilterAlert.Dismiss();
+                    GoogleMapsUtils.GoToLocationInMap(mMap,Double.parseDouble(key_last_lat),Double.parseDouble(key_last_long),FAR_ZOOM);
+                }
+                if(presupuestoFilterAlert != null && presupuestoFilterAlert.IsActive()) {
+                    presupuestoFilterAlert.DismissLoading();
+                    presupuestoFilterAlert.Dismiss();
+                    GoogleMapsUtils.GoToLocationInMap(mMap,Double.parseDouble(key_last_lat),Double.parseDouble(key_last_long),FAR_ZOOM);
+                }
+
+                if(experiencias.isEmpty())
+                    new Alert(BuscarExperienciaActivity.this).Show("No se encontraron experiencias con esa combinación de filtros.","Mala Suerte =(");
+
                 break;
             }
 
@@ -736,6 +983,13 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         }
         double latitude = address.getLatitude();
         double longitude = address.getLongitude();
+
+        sharedPref.edit().putString(getString(R.string.key_last_lat), Double.toString(latitude));
+        sharedPref.edit().putString(getString(R.string.key_last_long), Double.toString(longitude));
+        sharedPref.edit().putString(getString(R.string.key_distancia_filtro), RADIO_DISTANCIA);
+        sharedPref.edit().apply();
+        RefreshPreferenceValues();
+
         Experiencia.Filter("","","","","",Double.toString(latitude),Double.toString(longitude),RADIO_DISTANCIA).enqueue(WSRetrofit.ParseResponseWS(this,FILTER_EXPERIENCIAS));
         GoogleMapsUtils.GoToLocationInMap(mMap,latitude,longitude,null);
     }

@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -11,13 +12,23 @@ import android.widget.Toast;
 import java.util.ArrayList;
 
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.lib.utils.Alert;
+import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
+import utn.frba.mobile.experienciaapp.models.Interes;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class ExperienciaDetailActivity extends AppCompatActivity {
+public class ExperienciaDetailActivity extends AppCompatActivity implements ReciveResponseWS{
 
     ViewPager viewPagerPhotoSlider;
     Experiencia experiencia;
+
+    private static final String TAG = "ExperienciaDetailAct";
+    private static final int GET_DETALLE = 3;
+
+    Alert loadingAlert = new Alert(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +37,10 @@ public class ExperienciaDetailActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         Integer id = intent.getIntExtra("id", 0);
+        Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_DETALLE));
 
+        loadingAlert.Loading();
+        /*
         experiencia = this.getMockExperiencia(id);
         setTitle(experiencia.getNombre());
 
@@ -35,6 +49,7 @@ public class ExperienciaDetailActivity extends AppCompatActivity {
         viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
 
         this.setLayoutTexts(experiencia);
+        */
 
     }
 
@@ -91,5 +106,34 @@ public class ExperienciaDetailActivity extends AppCompatActivity {
         Intent myIntent = new Intent(ExperienciaDetailActivity.this, ProductorActivity.class);
         myIntent.putExtra("id",experiencia.getProductor().getId()); //Optional parameters
         ExperienciaDetailActivity.this.startActivity(myIntent);
+    }
+
+    @Override
+    public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+        switch(accion){
+            case GET_DETALLE:{
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Experiencia) {
+                    experiencia = (Experiencia) responseWS.getResult().get(0);
+                    setTitle(experiencia.getNombre());
+
+                    viewPagerPhotoSlider = (ViewPager) findViewById(R.id.photoSlider);
+                    ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, experiencia.getImagenes());
+                    viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
+
+                    this.setLayoutTexts(experiencia);
+                }else{
+                    new Alert(this).Show("Ocurrio un error al consultar el WS.","Error");
+                }
+
+                if(loadingAlert.IsLoading()){
+                    loadingAlert.DismissLoading();
+                }
+                break;
+            }
+
+            default:{
+                Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+            }
+        }
     }
 }
