@@ -1,8 +1,10 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.content.Intent;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -10,22 +12,35 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.lib.utils.Alert;
+import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class ProductorActivity extends AppCompatActivity {
+public class ProductorActivity extends BaseActivityWithToolBar implements ReciveResponseWS {
+
+    private static final String TAG = "ProductorActivity";
+    private static final int GET_PERFIL = 1;
+
+    Alert loadingAlert = new Alert(this);
+    ViewPager viewPagerPhotoSlider;
 
     Productor productor;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_productor);
+        AddBackButtonToToolBar();
 
         Intent intent = getIntent();
         Integer id = intent.getIntExtra("id", 0);
+        Productor.GetPerfil(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_PERFIL));
+
 
         productor = getMockProductor(id);
         setTitle(productor.getNombre() + " " + productor.getApellido());
@@ -75,4 +90,30 @@ public class ProductorActivity extends AppCompatActivity {
         Toast.makeText(ProductorActivity.this.getApplicationContext(),"Mostrar Experiencias", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+        switch(accion){
+            case GET_PERFIL:{
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Productor) {
+                    productor = (Productor) responseWS.getResult().get(0);
+                    setTitle(productor.getNombre() + " " + productor.getApellido());
+                    setLayoutTexts(productor);
+                    viewPagerPhotoSlider = (ViewPager) findViewById(R.id.photoSlider);
+                    ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, productor.getImagenes());
+                    viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
+                }else{
+                    new Alert(this).Show("Ocurrio un error al consultar el WS.","Error");
+                }
+
+                if(loadingAlert.IsLoading()){
+                    loadingAlert.DismissLoading();
+                }
+                break;
+            }
+
+            default:{
+                Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+            }
+        }
+    }
 }

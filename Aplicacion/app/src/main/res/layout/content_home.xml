@@ -7,18 +7,21 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".HomeActivity"
     tools:showIn="@layout/app_bar_home"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:weightSum="2">
 
     <Button
         android:id="@+id/buscarExperienciaIB"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
         android:text="Experiencias" />
 
     <Button
         android:id="@+id/miAgendaaIB"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
         android:text="Mi Agenda" />
 
 

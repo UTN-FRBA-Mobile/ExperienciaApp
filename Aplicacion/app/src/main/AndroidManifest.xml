@@ -46,8 +46,10 @@
             android:name=".experiencia.BuscarExperienciaActivity"
             android:label="@string/title_activity_test_slide"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".experiencia.ExperienciaDetailActivity" />
-        <activity android:name=".experiencia.ProductorActivity" />
+        <activity android:name=".experiencia.ExperienciaDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".experiencia.ProductorActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
         <activity android:name=".login.LoginActivity" />
         <activity
             android:name=".HomeActivity"

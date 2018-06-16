@@ -151,8 +151,13 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         super.onStart();
 
         RefreshPreferenceValues();
-        if (!flagAlertInicio)
+        if (!flagAlertInicio){
             ShowPedirUbicacionAlert(true);
+        }else if(!key_last_lat.equals("") && !key_last_long.equals("") && !key_distancia_filtro.equals("")){
+            Experiencia.Filter(key_intereses_filtro, key_fecha_hora_inicio_filtro, key_fecha_hora_fin_filtro, key_presupuesto_inicio_filtro, key_presupuesto_fin_filtro, key_last_lat, key_last_long, key_distancia_filtro).enqueue(WSRetrofit.ParseResponseWS(BuscarExperienciaActivity.this, FILTER_EXPERIENCIAS));
+        }else {
+            ShowPedirUbicacionAlert(true);
+        }
     }
 
     public void RefreshPreferenceValues(){
@@ -959,6 +964,10 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 if(presupuestoFilterAlert != null && presupuestoFilterAlert.IsActive()) {
                     presupuestoFilterAlert.DismissLoading();
                     presupuestoFilterAlert.Dismiss();
+                    GoogleMapsUtils.GoToLocationInMap(mMap,Double.parseDouble(key_last_lat),Double.parseDouble(key_last_long),FAR_ZOOM);
+                }
+
+                if(distanciaFilterAlert == null && interesesFilterAlert == null && fechaHoraFilterAlert == null && presupuestoFilterAlert == null && mMap != null){
                     GoogleMapsUtils.GoToLocationInMap(mMap,Double.parseDouble(key_last_lat),Double.parseDouble(key_last_long),FAR_ZOOM);
                 }
 

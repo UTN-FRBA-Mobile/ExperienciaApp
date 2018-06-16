@@ -3,11 +3,13 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 
-public class Productor {
+public class Productor extends ModeloGenerico{
 
     @SerializedName("id")
     @Expose
@@ -60,13 +62,16 @@ public class Productor {
     @SerializedName("habilitado")
     @Expose
     private String habilitado;
+    @SerializedName("imagenes")
+    @Expose
+    private ArrayList<String> imagenes;
 
     //Metodos para WS
     public static Call<ResponseWS> GetPerfil(int id){
         return WSRetrofit.getInstance().getInformationOf(
                 WSRetrofit.APARTADO,
                 WSRetrofit.KEY,
-                WSRetrofit.GET_DETALLE_EXPERIENCIA,
+                WSRetrofit.GET_PERFIL_PRODUCTOR,
                 Integer.toString(id)
         );
     }
@@ -205,6 +210,14 @@ public class Productor {
 
     public void setHabilitado(String habilitado) {
         this.habilitado = habilitado;
+    }
+
+    public ArrayList<String> getImagenes() {
+        return imagenes;
+    }
+
+    public void setImagenes(ArrayList<String> imagenes) {
+        this.imagenes = imagenes;
     }
 
 }

@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
@@ -20,7 +21,7 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.Interes;
 import utn.frba.mobile.experienciaapp.models.Productor;
 
-public class ExperienciaDetailActivity extends AppCompatActivity implements ReciveResponseWS{
+public class ExperienciaDetailActivity extends BaseActivityWithToolBar implements ReciveResponseWS{
 
     ViewPager viewPagerPhotoSlider;
     Experiencia experiencia;
@@ -34,23 +35,13 @@ public class ExperienciaDetailActivity extends AppCompatActivity implements Reci
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_experiencia_detail);
+        AddBackButtonToToolBar();
 
         Intent intent = getIntent();
         Integer id = intent.getIntExtra("id", 0);
         Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_DETALLE));
 
         loadingAlert.Loading();
-        /*
-        experiencia = this.getMockExperiencia(id);
-        setTitle(experiencia.getNombre());
-
-        viewPagerPhotoSlider = (ViewPager) findViewById(R.id.photoSlider);
-        ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, experiencia.getImagenes());
-        viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
-
-        this.setLayoutTexts(experiencia);
-        */
-
     }
 
     private void setLayoutTexts(Experiencia exp){
