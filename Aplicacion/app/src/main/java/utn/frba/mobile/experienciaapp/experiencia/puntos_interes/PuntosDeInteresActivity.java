@@ -5,10 +5,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -22,6 +24,8 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.Marker;
 import com.google.gson.Gson;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,6 +37,7 @@ import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.experiencia.ExperienciaDetailActivity;
 import utn.frba.mobile.experienciaapp.experiencia.ExperienciaInfoWindowAdapter;
+import utn.frba.mobile.experienciaapp.experiencia.ViewPagerAdapter;
 import utn.frba.mobile.experienciaapp.lib.animations.slidinguppanel.SlidingUpPanelLayout;
 import utn.frba.mobile.experienciaapp.lib.googlemaps.GoogleMapsUtils;
 import utn.frba.mobile.experienciaapp.lib.permisions.PermisionsUtils;
@@ -95,7 +100,18 @@ public class PuntosDeInteresActivity extends BaseActivityWithToolBar implements 
             public void onInfoWindowClick(Marker marker) {
                 PuntoInteres puntoInteres = (new Gson()).fromJson(marker.getSnippet(), PuntoInteres.class);
                 Alert puntoDetailAlert = new Alert(PuntosDeInteresActivity.this);
-                puntoDetailAlert.Show(puntoInteres.getDescripcion(),puntoInteres.getNombre());
+
+                LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+                View puntoInteresDetailView = inflater.inflate(R.layout.punto_interes_detail, null, false);
+
+                TextView descripcionTV = puntoInteresDetailView.findViewById(R.id.descripcionTV);
+                descripcionTV.setText(puntoInteres.getDescripcion());
+
+                ViewPager viewPagerPhotoSlider = puntoInteresDetailView.findViewById(R.id.photoSlider);
+                ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(PuntosDeInteresActivity.this, puntoInteres.getImagenes());
+                viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
+
+                puntoDetailAlert.ShowView(puntoInteresDetailView,puntoInteres.getNombre(),"Cerrar");
             }
         });
 
