@@ -3,6 +3,7 @@ package utn.frba.mobile.experienciaapp.experiencia;
 import android.app.Activity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -29,9 +30,12 @@ public class ExperienciaInfoWindowAdapter implements GoogleMap.InfoWindowAdapter
 
         TextView tvTitle = (TextView) view.findViewById(R.id.tv_title);
         TextView tvSubTitle = (TextView) view.findViewById(R.id.tv_subtitle);
+        RatingBar calificacion = (RatingBar) view.findViewById(R.id.calificacion);
 
         tvTitle.setText(experiencia.getNombre());
         tvSubTitle.setText(experiencia.getDescripcion());
+        calificacion.setMax(5);
+        calificacion.setNumStars(experiencia.getCalificacino());
 
         return view;
     }

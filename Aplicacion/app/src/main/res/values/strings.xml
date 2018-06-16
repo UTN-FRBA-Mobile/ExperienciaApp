@@ -17,6 +17,9 @@
     <string name="follow"><![CDATA[Follow us<br/>on <a href="http://twitter.com/umanoapp">Twitter</a>]]></string>
     <string name="autocomplete_hint">Ingrese un nombre o dirección</string>
 
+    //PuntosDeInteresActivity Strings
+    <string name="listado_de_puntos"><![CDATA[<b>Listado Puntos de Interes</b>]]></string>
+
     //Preference keys
     <string name="key_alert_inicio_buscar_experiencia">key_alert_inicio_buscar_experiencia</string>
     <string name="key_mi_posicion_filtro_value">key_mi_posicion_filtro_value</string>
@@ -41,4 +44,5 @@
     <string name="deportes">Deportes</string>
     <string name="relax">Relax</string>
     <string name="tituloPopupFavoritos">Favoritos</string>
+    <string name="title_activity_puntos_de_interes">PuntosDeInteresActivity</string>
 </resources>

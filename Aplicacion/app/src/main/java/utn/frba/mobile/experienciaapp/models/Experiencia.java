@@ -7,10 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.googlemaps.CustomMarkerData;
 import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 
-public class Experiencia extends ModeloGenerico {
+public class Experiencia extends ModeloGenerico implements CustomMarkerData {
 
     @SerializedName("id")
     @Expose
@@ -42,11 +43,15 @@ public class Experiencia extends ModeloGenerico {
     @SerializedName("duracion")
     @Expose
     private String duracion;
+    @SerializedName("direccion")
     @Expose
     private String direccion;
     @SerializedName("imagenes")
     @Expose
     private ArrayList<String> imagenes;
+    @SerializedName("calificacion")
+    @Expose
+    private Integer calificacion;
 
     //Metodos para WS
 
@@ -189,5 +194,13 @@ public class Experiencia extends ModeloGenerico {
 
     public void setImagenes(ArrayList<String> imagenes) {
         this.imagenes = imagenes;
+    }
+
+    public Integer getCalificacino() {
+        return calificacion;
+    }
+
+    public void setCalificacino(Integer calificacion) {
+        this.calificacion = calificacion;
     }
 }

@@ -41,19 +41,18 @@ public class GoogleMapsUtils {
         mMap.animateCamera(yourLocation);
     }
 
-    public static MarkerOptions GetMarkerOptionsFor(Experiencia experiencia){
+    public static MarkerOptions GetMarkerOptionsFor(CustomMarkerData customMarkerData){
         MarkerOptions markerOpt = new MarkerOptions();
 
-        if(experiencia == null){
+        if(customMarkerData == null){
             return null;
         }
 
-        LatLng latLng1 = new LatLng(experiencia.getLatitud(), experiencia.getLongitud());
+        LatLng latLng1 = new LatLng(customMarkerData.getLatitud(), customMarkerData.getLongitud());
 
         markerOpt.position(latLng1)
-                .title(experiencia.getNombre())
-                .snippet((new Gson()).toJson(experiencia));
-        //.icon(BitmapDescriptorFactory.fromResource(drawableResource));
+                .title(customMarkerData.getNombre())
+                .snippet((new Gson()).toJson(customMarkerData));
 
         return markerOpt;
     }

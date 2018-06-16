@@ -46,10 +46,12 @@
             android:name=".experiencia.BuscarExperienciaActivity"
             android:label="@string/title_activity_test_slide"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".experiencia.ExperienciaDetailActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <activity android:name=".experiencia.ProductorActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity
+            android:name=".experiencia.ExperienciaDetailActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".experiencia.ProductorActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".login.LoginActivity" />
         <activity
             android:name=".HomeActivity"
@@ -65,7 +67,11 @@
             android:name=".experiencia.filtros.FavoritosFiltro"
             android:label="@string/tituloPopupFavoritos"
             android:theme="@style/AppTheme.PopUp" />
-        <activity android:name=".agenda.AgendaActivity"></activity>
+        <activity android:name=".agenda.AgendaActivity" />
+        <activity
+            android:name=".experiencia.puntos_interes.PuntosDeInteresActivity"
+            android:label="@string/title_activity_puntos_de_interes"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

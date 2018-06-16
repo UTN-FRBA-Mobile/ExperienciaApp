@@ -65,6 +65,9 @@ public class Productor extends ModeloGenerico{
     @SerializedName("imagenes")
     @Expose
     private ArrayList<String> imagenes;
+    @SerializedName("calificacion")
+    @Expose
+    private Integer calificacion;
 
     //Metodos para WS
     public static Call<ResponseWS> GetPerfil(int id){
@@ -218,6 +221,14 @@ public class Productor extends ModeloGenerico{
 
     public void setImagenes(ArrayList<String> imagenes) {
         this.imagenes = imagenes;
+    }
+
+    public Integer getCalificacino() {
+        return calificacion;
+    }
+
+    public void setCalificacino(Integer calificacion) {
+        this.calificacion = calificacion;
     }
 
 }

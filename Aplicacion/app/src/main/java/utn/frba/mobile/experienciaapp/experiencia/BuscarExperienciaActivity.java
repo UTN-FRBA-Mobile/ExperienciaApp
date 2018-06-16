@@ -90,6 +90,8 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
     private List<Experiencia> experiencias = new ArrayList<>();
     private List<Interes> intereses = new ArrayList<>();
 
+    public Map<Integer, Marker> markerList = new HashMap<>();
+
     public Alert distanciaFilterAlert;
     public View distanciaView;
     public Alert interesesFilterAlert;
@@ -204,8 +206,6 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         super.onDestroy();
     }
 
-    public Map<Integer, Marker> markerList = new HashMap<>();
-
     private void SetListOfExperiencias(List<Experiencia> listExperiencias) {
         TextView t = (TextView) findViewById(R.id.listadoExperienciasTV);
         t.setText(Html.fromHtml(getString(R.string.listado_de_experiencias)));
@@ -295,6 +295,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         }
     }
 
+    @SuppressLint("MissingPermission")
     private void SetMyLocationButton() {
         ImageView myLocationButton = (ImageView) findViewById(R.id.myLocationButton);
         myLocationButton.setOnClickListener(new View.OnClickListener() {
@@ -308,6 +309,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                         final double longitude = simpleLocation.getLongitude();
 
                         if (mMap != null) {
+                            /*
                             simpleLocation.setListener(new SimpleLocation.Listener() {
 
                                 public void onPositionChanged() {
@@ -322,8 +324,9 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                             });
                             if (myLocation != null)
                                 myLocation.remove();
-
                             myLocation = GoogleMapsUtils.AddMarkerOptionsToMap(mMap, GoogleMapsUtils.GetMarkerOptionsFor(latitude, longitude), R.drawable.ic_user_point, false);
+                            */
+                            mMap.setMyLocationEnabled(true);
                             GoogleMapsUtils.GoToLocationInMap(mMap, latitude, longitude, null);
                         }
                     }
@@ -334,6 +337,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         });
     }
 
+    @SuppressLint("MissingPermission")
     private void inicializarFiltros() {
         interesesIB = (ImageView) findViewById(R.id.interesesIB);
         fechaHoraIB = (ImageView) findViewById(R.id.fechaHoraIB);
@@ -855,64 +859,6 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
         super.onPause();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-
-    }
-
-    //TODO: BOrrar
-    private List<Experiencia> MockExperiences(){
-        List<Experiencia> experinecias = new ArrayList<>();
-
-        for(int i=0;i<10;i++) {
-            double v = i / 1000d;
-            Experiencia exp = new Experiencia();
-            exp.setNombre("Pirámides de egipto");
-            exp.setDescripcion("Las pirámides de Egipto son, de todos los vestigios legados por egipcios de la antigüedad, los más portentosos y emblemáticos monumentos de esta civilización, y en particular, las tres grandespirámides de Giza, las tumbas o cenotafios de los faraones Keops, Kefrén y Micerino, cuya construcción se remonta, para la gran mayoría de estudiosos, al periodo denominado Imperio Antiguo de Egipto. La Gran Pirámide de Giza, construida por Keops (Jufu), es una de lasSiete Maravillas del Mundo Antiguo, además de ser la única que aún perdura. Su visita guiada comienza con una fascinante introducción de cada una de las tres pirámides de Gizeh: la de Keops, la de Kefrén y la de Micerinos. Dispondrá de tiempo libre para entrar a una de las pirámides (coste adicional), aunque a su guía no le estará permitido entrar con usted." +
-                    "Un corto trayecto por carretera hacia el lado de la meseta más cercano a la ciudad le lleva a los pies de la esfinge, el enigmático símbolo de Egipto. También en Gizeh puede visitar el Museo de la Barca Solar (opcional), que alberga la magníficamente bien conservada barca funeraria de Keops.");
-            exp.setFechaCreacion("09/05/2018");
-            exp.setPrecio("1200");
-            exp.setDireccion("Av Siempreviva 4530, El Cairo");
-            exp.setDuracion("2");
-            exp.setLatitud(-34 + v);
-            exp.setLongitud(151 + v);
-
-            ArrayList imagenes = new ArrayList();
-            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-portada-600x429.jpg");
-            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-giza-600x337.jpg");
-            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-pesado-del-corazon-600x350.jpg");
-            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-piramides.jpg");
-            imagenes.add("https://sobrehistoria.com/wp-content/uploads/2016/03/las-piramides-de-egipto-ciudad-constructores-600x450.jpg");
-
-            exp.setImagenes(imagenes);
-
-            Productor productor = new Productor();
-            productor.setId(100);
-            productor.setNombre("Roberto");
-            productor.setApellido("Gómez Bolaños");
-
-            exp.setProductor(productor);
-
-            experinecias.add(exp);
-        }
-
-        return experinecias;
-    }
-
-    //TODO: BOrrar
-    private List<Interes> MockIntereses(){
-        List<Interes> interesList = new ArrayList<>();
-
-        for(int i=0;i<10;i++) {
-            double v = i / 1000d;
-            Interes inter = new Interes();
-            inter.setId(i);
-            inter.setNombre("Interes "+i);
-            interesList.add(inter);
-        }
-
-        return interesList;
-    }
     @Override
     public void ReciveResponseWS(ResponseWS responseWS,int accion) {
 

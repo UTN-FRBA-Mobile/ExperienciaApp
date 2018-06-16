@@ -1,6 +1,7 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.content.Intent;
+import android.media.Rating;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -28,6 +29,7 @@ public class ProductorActivity extends BaseActivityWithToolBar implements Recive
 
     Alert loadingAlert = new Alert(this);
     ViewPager viewPagerPhotoSlider;
+    RatingBar calificacionBar;
 
     Productor productor;
 
@@ -41,12 +43,7 @@ public class ProductorActivity extends BaseActivityWithToolBar implements Recive
         Integer id = intent.getIntExtra("id", 0);
         Productor.GetPerfil(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_PERFIL));
 
-
-        productor = getMockProductor(id);
-        setTitle(productor.getNombre() + " " + productor.getApellido());
-
-        setLayoutTexts(productor);
-
+        loadingAlert.Loading();
     }
 
     private void setLayoutTexts(Productor p){
@@ -101,6 +98,11 @@ public class ProductorActivity extends BaseActivityWithToolBar implements Recive
                     viewPagerPhotoSlider = (ViewPager) findViewById(R.id.photoSlider);
                     ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(this, productor.getImagenes());
                     viewPagerPhotoSlider.setAdapter(viewPagerAdapter);
+
+                    calificacionBar = (RatingBar) findViewById(R.id.calificacion);
+                    calificacionBar.setMax(5);
+                    calificacionBar.setNumStars(productor.getCalificacino());
+
                 }else{
                     new Alert(this).Show("Ocurrio un error al consultar el WS.","Error");
                 }
