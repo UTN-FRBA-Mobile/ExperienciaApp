@@ -51,6 +51,20 @@ public interface WebAPIService {
     );
 
     /**
+     * Trae informacion dependiendo del paramentro @accion que se le pase y el @search, que puede ser un id, un email, ...
+     */
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<ResponseWS> getInformationOf(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("search") String search,
+            @Field("token") String token
+    );
+
+    /**
      *
      */
     @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
@@ -68,6 +82,22 @@ public interface WebAPIService {
             @Field("latitud") String latitud,
             @Field("longitud") String longitud,
             @Field("distancia") String distancia
+    );
+
+    /**
+     * Trae informacion dependiendo del paramentro @accion que se le pase y el @search, que puede ser un id, un email, ...
+     */
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<ResponseWS> signInTurista(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("email") String email,
+            @Field("firebase_token") String firebase_token,
+            @Field("last_longitud") String last_longitud,
+            @Field("last_latitud") String last_latitud
     );
 }
 

@@ -35,6 +35,9 @@ public class WSRetrofit {
     public static final String GET_EXPERIENCIAS_OF_PRODUCTOR = "get_experiencias_of_productor";
     public static final String GET_MI_PERFIL = "get_mi_perfil";
 
+    public static final String SIGN_IN_TURISTA = "sign_in_turista";
+    public static final String GET_RESERVAS_OF_TURISTA = "get_reservas_of_turista";
+
     public static final String FILTER_EXPERIENCIAS = "filter_experiencias";
 
     private WSRetrofit(){}  //private constructor.
@@ -96,38 +99,6 @@ public class WSRetrofit {
         }
         return results;
     }
-
-    /*
-    public static List<Object> ParseResult(ResponseWS responseWS){
-        List<Object> results = new ArrayList<>();
-        if(!responseWS.getResult().isEmpty()) {
-            for (Object obj:responseWS.getResult()) {
-                if(obj instanceof LinkedTreeMap) {
-                    String className = ModeloGenerico.GetClassOf((LinkedTreeMap)obj);
-
-                    if (className != null) {
-                        try {
-                            Class<?> clazz = Class.forName(className);
-                            Gson gson = new GsonBuilder().setLenient().create();
-                            Object specificObject = gson.fromJson(gson.toJson(obj), clazz);
-                            if(specificObject instanceof ModeloGenerico) {
-                                ModeloGenerico modeloGenerico = (ModeloGenerico) specificObject;
-                                results.add(modeloGenerico);//TODO: Comprobar que es instancia de clazz
-                            }
-                        } catch (ClassNotFoundException e) {
-                            ErrorTreatment.TreatExeption(e);
-                        }
-                    } else {
-                        ErrorTreatment.TreatExeption(new Exception("Null ModeloGenerico.GetClassOf of " + obj.toString()));
-                    }
-                }else{
-                    ErrorTreatment.TreatExeption(new Exception("Object from ResponseWS not instance of LinkedTreeMap," + obj.toString()));
-                }
-            }
-        }
-        return results;
-    }
-    */
 
     public static Call<String> GetRawResponse(String accion){
         return WSRetrofit.getInstance().getRawResponse(
