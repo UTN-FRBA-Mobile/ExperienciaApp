@@ -7,7 +7,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class FechaExperiencia {
+public class FechaExperiencia extends ModeloGenerico{
     private static SimpleDateFormat dateFormat =new SimpleDateFormat("dd/MM/yyyy hh:mm");
 
     @SerializedName("id")

@@ -1,6 +1,8 @@
 package utn.frba.mobile.experienciaapp.service;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -24,6 +26,7 @@ import utn.frba.mobile.experienciaapp.login.LoginActivity;
 
 public class LoginService  {
     private static final String TAG = "LoginService";
+    private SharedPreferences sharedPref;
 
     private static final int SIGN_ING_GOOGLE_CODE = 1;
     private FirebaseAuth firebaseAuth;
@@ -42,7 +45,7 @@ public class LoginService  {
 
     public static LoginService builder(LoginActivity activiy){
         if(instance!=null){
-            throw new IllegalStateException("Ya fue generad la instancia utilizar getInstance");
+            return instance;
         }
         instance=new LoginService(activiy);
         return instance;
@@ -50,6 +53,7 @@ public class LoginService  {
 
     private LoginService(LoginActivity activiy){
         this.loginActivity=activiy;
+        this.sharedPref = this.loginActivity.getPreferences(Context.MODE_PRIVATE);
         firebaseAuth=FirebaseAuth.getInstance();
         authStateListener=new FirebaseAuth.AuthStateListener() {
             @Override
@@ -59,8 +63,12 @@ public class LoginService  {
                     Log.w(TAG,"onAuthStateChanged - singed in" );
                     Log.w(TAG,"onAuthStateChanged - UUID:"+firebaseUser.getUid());
                     Log.w(TAG,"onAuthStateChanged - email: "+firebaseUser.getEmail());
+                    sharedPref.edit().putBoolean("key_logedin",true);
+                    sharedPref.edit().putString("key_email",firebaseUser.getEmail());
+                    sharedPref.edit().putString("key_image",firebaseUser.getPhotoUrl().toString());
                 }else{
                     Log.w(TAG,"onAuthStateChanged - singed out" );
+                    sharedPref.edit().putBoolean("key_logedin",false);
                 }
             }
         };
@@ -73,7 +81,8 @@ public class LoginService  {
 
     private void signInGoogleFirebase(GoogleSignInResult googleSignInResult){
         if(googleSignInResult.isSuccess()){
-            AuthCredential authCredential= GoogleAuthProvider.getCredential(googleSignInResult.getSignInAccount().getIdToken(),null);
+            final AuthCredential authCredential= GoogleAuthProvider.getCredential(googleSignInResult.getSignInAccount().getIdToken(),null);
+
             firebaseAuth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                 @Override
                 public void onComplete(@NonNull Task<AuthResult> task) {
@@ -84,14 +93,20 @@ public class LoginService  {
                         loginActivity.finish();
                     }else{
                         Toast.makeText(loginActivity,"GOOGLE Login invalido", Toast.LENGTH_SHORT).show();
+
                     }
                 }
             });
 
         }else{
             Toast.makeText(loginActivity,"GOOGLE SIGN IN INVALIDO", Toast.LENGTH_SHORT).show();
+            sharedPref.edit().putBoolean("key_logedin",false);
 
         }
+    }
+
+    public boolean isLogged(){
+        return firebaseAuth.getCurrentUser()!=null;
     }
 
     public void singOut(){
@@ -137,6 +152,7 @@ public class LoginService  {
         });
     }
 
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(SIGN_ING_GOOGLE_CODE == requestCode){
             GoogleSignInResult googleSignInResult=Auth.GoogleSignInApi.getSignInResultFromIntent(data);
@@ -144,3 +160,5 @@ public class LoginService  {
         }
     }
 }
+
+

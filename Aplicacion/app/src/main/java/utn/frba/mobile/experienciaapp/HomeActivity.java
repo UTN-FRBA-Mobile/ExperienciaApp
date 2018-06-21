@@ -13,13 +13,19 @@ import android.support.v4.widget.DrawerLayout;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.squareup.picasso.Picasso;
 
 import utn.frba.mobile.experienciaapp.agenda.AgendaActivity;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.login.LoginActivity;
+import utn.frba.mobile.experienciaapp.service.LoginService;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences sharedPref;
@@ -40,26 +46,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-        View headerView = navigationView.getHeaderView(0);
-
-        TextView usersameTV = (TextView) headerView.findViewById(R.id.usernameTV);
-        TextView emailTV = (TextView) headerView.findViewById(R.id.emailTV);
-        LinearLayout ll_user = (LinearLayout) headerView.findViewById(R.id.ll_user);
-
-        if(!sharedPref.getBoolean(getString(R.string.key_logedin),false)) {
-            navigationView.getMenu().findItem(R.id.nav_logout).setVisible(false);
-            usersameTV.setText("No registrado");
-            emailTV.setText("-");
-            ll_user.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent i = new Intent(getBaseContext(), LoginActivity.class);
-                    startActivity(i);
-                }
-            });
-        }
+        loginBehaviorButton();
 
         Button buscarExperienciaIB = (Button) findViewById(R.id.buscarExperienciaIB);
 
@@ -84,6 +71,40 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
+    private void loginBehaviorButton() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+        View headerView = navigationView.getHeaderView(0);
+
+        ImageView profileImg = (ImageView) headerView.findViewById(R.id.profileImg);
+
+        TextView usersameTV = (TextView) headerView.findViewById(R.id.usernameTV);
+        TextView emailTV = (TextView) headerView.findViewById(R.id.emailTV);
+        LinearLayout ll_user = (LinearLayout) headerView.findViewById(R.id.ll_user);
+
+        navigationView.getMenu().findItem(R.id.nav_logout).setVisible(false);
+
+        FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+        FirebaseUser fuser=firebaseAuth.getCurrentUser();
+        if(fuser==null) {
+            usersameTV.setText("No registrado");
+            emailTV.setText("-");
+            Picasso.get().load(R.mipmap.ic_launcher_round).into(profileImg);
+            ll_user.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(getBaseContext(), LoginActivity.class);
+                    startActivity(i);
+                }
+            });
+        }else{
+            Picasso.get().load(fuser.getPhotoUrl()).into(profileImg);
+            usersameTV.setText("Registrado");
+            emailTV.setText(fuser.getEmail());
+            navigationView.getMenu().findItem(R.id.nav_logout).setVisible(true);
+        }
+    }
+
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -92,6 +113,12 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loginBehaviorButton();
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -107,7 +134,9 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             Intent i = new Intent(getBaseContext(), AgendaActivity.class);
             startActivity(i);
         } else if (id == R.id.nav_logout) {
-            //TODO Logout
+            FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+            firebaseAuth.signOut();
+            loginBehaviorButton();
         } else if (id == R.id.nav_acerca) {
             Alert alertAcerca = new Alert(this);
             alertAcerca.Show("Equipo Violeta - TP Mobile","Sobre Nosotros");

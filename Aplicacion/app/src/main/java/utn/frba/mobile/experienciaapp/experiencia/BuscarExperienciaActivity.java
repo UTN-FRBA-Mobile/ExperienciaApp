@@ -726,6 +726,7 @@ public class BuscarExperienciaActivity extends BaseActivityWithToolBar implement
                 miUbicacionB.setChecked(flagMiPosicionFiltro);
 
                 View.OnClickListener aceptOnclick = new View.OnClickListener() {
+                    @SuppressLint("MissingPermission")
                     @Override
                     public void onClick(View v) {
                         EditText distanciaET = (EditText) distanciaView.findViewById(R.id.distanciaET);

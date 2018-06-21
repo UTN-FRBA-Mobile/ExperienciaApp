@@ -3,7 +3,11 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Turista {
+import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+
+public class Turista extends ModeloGenerico{
     @SerializedName("id")
     @Expose
     private Integer id;
@@ -31,6 +35,49 @@ public class Turista {
     @SerializedName("last_request")
     @Expose
     private String lastRequest;
+
+    public static Call<ResponseWS> SignIn(Turista turista){
+        //TODO: Validacion de turista seteado
+        String l_long = "";
+        String l_lat = "";
+
+        if(turista.getLastLongitud() != null)
+            l_long = turista.getLastLongitud().toString();
+        if(turista.getLastLatitud() != null)
+            l_lat = turista.getLastLatitud().toString();
+
+        return WSRetrofit.getInstance().signInTurista(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.SIGN_IN_TURISTA,
+                turista.getEmail(),
+                turista.firebaseToken,
+                l_long,
+                l_lat
+        );
+
+        /*
+        Ejemplo de respuesta del server
+        ﻿{
+            "value": "0",
+            "msg": "El turista se creo correctamente.",
+            "result": [
+                {
+                    "id": 8,
+                    "email": "test@test1234.com",
+                    "login_token": "8477b7194568bf767391dcaa30fcb207",
+                    "login_type": "GOOGLE",
+                    "firebase_token": "enkjewb4kj5b34jk",
+                    "last_longitud": null,
+                    "last_latitud": null,
+                    "last_geo_update": null,
+                    "last_request": "2018-06-20 21:13",
+                    "class": "Turista"
+                }
+            ]
+        }
+        */
+    }
 
     public Integer getId() {
         return id;

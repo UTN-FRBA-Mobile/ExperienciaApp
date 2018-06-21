@@ -3,7 +3,13 @@ package utn.frba.mobile.experienciaapp.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class Reserva {
+import java.util.List;
+
+import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+
+public class Reserva extends ModeloGenerico{
     @SerializedName("id")
     @Expose
     private Integer id;
@@ -23,6 +29,27 @@ public class Reserva {
     @Expose
     private FechaExperiencia fechaExperiencia;
 
+    public static Call<ResponseWS> GetReservasOf(int turista_id,String token){
+        return WSRetrofit.getInstance().getInformationOf(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.GET_RESERVAS_OF_TURISTA,
+                Integer.toString(turista_id),
+                token
+        );
+    }
+
+    public static List<Reserva> addResponseToList(List<Reserva> reservas, ResponseWS responseWS){
+        if(responseWS != null && !responseWS.getResult().isEmpty()){
+            for(Object obj : responseWS.getResult()){
+                if(obj instanceof Experiencia){
+                    reservas.add((Reserva) obj);
+                }
+            }
+        }
+
+        return reservas;
+    }
     public Integer getId() {
         return id;
     }
