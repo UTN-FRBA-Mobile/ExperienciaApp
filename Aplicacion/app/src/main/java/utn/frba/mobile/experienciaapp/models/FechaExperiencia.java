@@ -23,6 +23,17 @@ public class FechaExperiencia {
     @Expose
     private Experiencia experiencia;
 
+    public FechaExperiencia(){
+
+    }
+
+    public FechaExperiencia(Integer id, Integer disponibilidad, String fecha_hora, Experiencia experiencia){
+        this.id = id;
+        this.disponibilidad = disponibilidad;
+        this.fecha_hora = fecha_hora;
+        this.experiencia = experiencia;
+    }
+
     public Integer getId() {
         return id;
     }

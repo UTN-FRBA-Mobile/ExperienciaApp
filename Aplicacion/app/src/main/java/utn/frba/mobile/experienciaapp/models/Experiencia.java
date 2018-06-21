@@ -52,6 +52,9 @@ public class Experiencia extends ModeloGenerico implements CustomMarkerData {
     @SerializedName("calificacion")
     @Expose
     private Integer calificacion;
+    @SerializedName("fechas_experiencia")
+    @Expose
+    private ArrayList<FechaExperiencia> fechasExperiencia;
 
     //Metodos para WS
 
@@ -211,5 +214,13 @@ public class Experiencia extends ModeloGenerico implements CustomMarkerData {
 
     public void setCalificacino(Integer calificacion) {
         this.calificacion = calificacion;
+    }
+
+    public ArrayList<FechaExperiencia> getFechasExperiencia() {
+        return fechasExperiencia;
+    }
+
+    public void setFechasExperiencia(ArrayList<FechaExperiencia> fechasExperiencia) {
+        this.fechasExperiencia = fechasExperiencia;
     }
 }

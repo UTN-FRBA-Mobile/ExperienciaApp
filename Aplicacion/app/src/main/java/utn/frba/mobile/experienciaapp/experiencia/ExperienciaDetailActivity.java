@@ -2,15 +2,21 @@ package utn.frba.mobile.experienciaapp.experiencia;
 
 import android.content.Intent;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
@@ -20,8 +26,7 @@ import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
-import utn.frba.mobile.experienciaapp.models.Interes;
-import utn.frba.mobile.experienciaapp.models.Productor;
+import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 
 public class ExperienciaDetailActivity extends BaseActivityWithToolBar implements ReciveResponseWS{
 
@@ -30,6 +35,10 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
     private static final String TAG = "ExperienciaDetailAct";
     private static final int GET_DETALLE = 3;
+
+    public Alert reservaModalAlert;
+    public View reservaModalView;
+    public Spinner spinnerDates;
 
     Alert loadingAlert = new Alert(this);
 
@@ -44,7 +53,9 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_DETALLE));
 
         loadingAlert.Loading();
+
     }
+
 
     private void setLayoutTexts(Experiencia exp){
         setTxtTextView(R.id.fecha, exp.getFechaCreacion());
@@ -75,12 +86,79 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         ExperienciaDetailActivity.this.startActivity(myIntent);
     }
 
+    public void openReserveModal(View view){
+
+        reservaModalAlert = new Alert(ExperienciaDetailActivity.this);
+
+        LinearLayout modal_content = new LinearLayout(ExperienciaDetailActivity.this);
+        modal_content.setOrientation(LinearLayout.VERTICAL);
+        modal_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
+
+        LayoutInflater inflater = LayoutInflater.from(getBaseContext());
+
+
+        reservaModalView = inflater.inflate(R.layout.reserva_modal, modal_content, false);
+
+        spinnerDates = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
+        List<String> horarios = new ArrayList<>();
+
+        for(FechaExperiencia fecha: experiencia.getFechasExperiencia()){
+            horarios.add(fecha.getFechaHora());
+        }
+
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(ExperienciaDetailActivity.this, android.R.layout.simple_spinner_item, horarios);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerDates.setAdapter(dataAdapter);
+
+
+
+        View.OnClickListener aceptOnclick = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                EditText cantPersonasEditText = (EditText) reservaModalView.findViewById(R.id.cantPersonas);
+                Spinner horarioSpinner = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
+
+                if(cantPersonasEditText != null && cantPersonasEditText.getText() != null &&
+                        cantPersonasEditText.getText().toString() != null && !cantPersonasEditText.getText().toString().isEmpty() &&
+                        horarioSpinner != null && horarioSpinner.getSelectedItem() != null && horarioSpinner.getSelectedItem().toString() != null &&
+                        !horarioSpinner.getSelectedItem().toString().isEmpty()
+                        ){
+
+                    String cantPersonas = cantPersonasEditText.getText().toString();
+                    String horario = horarioSpinner.getSelectedItem().toString();
+
+                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + "." ,Toast.LENGTH_SHORT).show();
+                    reservaModalAlert.Dismiss();
+                } else {
+                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Complete los datos requeridos" ,Toast.LENGTH_SHORT).show();
+                }
+
+
+
+
+            }
+
+        };
+
+        reservaModalAlert.ShowFilterView(reservaModalView, "Reservar", aceptOnclick, false);
+
+    }
+
     @Override
     public void ReciveResponseWS(ResponseWS responseWS, int accion) {
         switch(accion){
             case GET_DETALLE:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Experiencia) {
                     experiencia = (Experiencia) responseWS.getResult().get(0);
+
+                    //----------  TODO: remover fechas mockeadas
+                    ArrayList<FechaExperiencia> horarios = new ArrayList<FechaExperiencia>();
+                    horarios.add(new FechaExperiencia(1, 1, "9:00 AM", experiencia));
+                    horarios.add(new FechaExperiencia(2, 1, "11:00 AM", experiencia));
+                    horarios.add(new FechaExperiencia(3, 1, "3:00 PM", experiencia));
+                    experiencia.setFechasExperiencia(horarios);
+                    // ----------------
+
                     setTitle(experiencia.getNombre());
 
                     viewPagerPhotoSlider = (ViewPager) findViewById(R.id.photoSlider);
