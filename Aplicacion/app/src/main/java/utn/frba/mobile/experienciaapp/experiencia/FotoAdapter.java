@@ -51,7 +51,6 @@ public class FotoAdapter extends RecyclerView.Adapter<FotoAdapter.ModelViewHolde
         public ModelViewHolder(View itemView) {
             super(itemView);
             this.imageView = itemView.findViewById(R.id.image_view);
-            this.textView = itemView.findViewById(R.id.text_view);
         }
 
         public void bind(Foto model) {

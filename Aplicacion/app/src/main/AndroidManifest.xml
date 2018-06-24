@@ -58,7 +58,7 @@
         <activity
             android:name=".HomeActivity"
             android:label="@string/title_activity_home"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".experiencia.filtros.FavoritosFiltro"
             android:label="@string/tituloPopupFavoritos"
@@ -72,7 +72,7 @@
             android:name=".experiencia.productor.ExperienciasProductorActivity"
             android:label="@string/title_activity_experiencias_productor"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".experiencia.GaleriaActivity"></activity>
+        <activity android:name=".experiencia.GaleriaActivity" />
     </application>
 
 </manifest>

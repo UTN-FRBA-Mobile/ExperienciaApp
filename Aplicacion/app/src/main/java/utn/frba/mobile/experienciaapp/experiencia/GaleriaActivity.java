@@ -9,6 +9,9 @@ import java.util.List;
 import android.support.v7.widget.LinearLayoutManager;
 import utn.frba.mobile.experienciaapp.models.Foto;
 import android.content.Intent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 public class GaleriaActivity extends AppCompatActivity {
 

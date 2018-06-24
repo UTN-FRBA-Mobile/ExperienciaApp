@@ -86,6 +86,14 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         ExperienciaDetailActivity.this.startActivity(myIntent);
     }
 
+    public void verFotos(View view){
+        //Toast.makeText(ProductorActivity.this.getApplicationContext(),"Mostrar Fotos", Toast.LENGTH_SHORT).show();
+        Intent myIntent = new Intent(ExperienciaDetailActivity.this, GaleriaActivity.class);
+        myIntent.putExtra("fotos",experiencia.getImagenes());
+        ExperienciaDetailActivity.this.startActivity(myIntent);
+
+    }
+
     public void openReserveModal(View view){
 
         reservaModalAlert = new Alert(ExperienciaDetailActivity.this);

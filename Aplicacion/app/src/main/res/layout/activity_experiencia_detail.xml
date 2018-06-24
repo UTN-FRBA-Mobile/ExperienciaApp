@@ -106,6 +106,15 @@
                     android:onClick="viewItinerary"
                     android:text="@string/view_itinerary" />
 
+                <Button
+                    android:id="@+id/ver_fotos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawableLeft="@drawable/ic_photo_library_black_24dp"
+                    android:drawablePadding="10dp"
+                    android:text="Galeria de Fotos"
+                    android:onClick="verFotos"/>
+
                 <TextView
                     android:id="@+id/precio"
                     android:layout_width="match_parent"
