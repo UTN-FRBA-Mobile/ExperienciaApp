@@ -56,6 +56,7 @@
                     android:drawableLeft="@drawable/ic_location_on_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="llamarTelefono"
                     android:textStyle="bold" />
 
                 <RatingBar
@@ -74,6 +75,7 @@
                     android:drawableLeft="@drawable/ic_local_phone_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="llamarTelefono"
                     android:textStyle="bold" />
 
                 <TextView
@@ -83,6 +85,7 @@
                     android:drawableLeft="@drawable/ic_phone_iphone_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="llamarCelular"
                     android:textStyle="bold" />
 
                 <TextView
@@ -92,6 +95,7 @@
                     android:drawableLeft="@drawable/ic_mail_outline_black_24dp"
                     android:padding="10dp"
                     android:drawablePadding="10dp"
+                    android:onClick="enviarEmail"
                     android:textStyle="bold" />
 
                 <TextView

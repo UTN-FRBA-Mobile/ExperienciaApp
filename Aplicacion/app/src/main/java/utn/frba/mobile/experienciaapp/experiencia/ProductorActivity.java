@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.net.Uri;
 
 import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
@@ -68,7 +69,11 @@ public class ProductorActivity extends BaseActivityWithToolBar implements Recive
     }
 
     public void verFotos(View view){
-        Toast.makeText(ProductorActivity.this.getApplicationContext(),"Mostrar Fotos", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(ProductorActivity.this.getApplicationContext(),"Mostrar Fotos", Toast.LENGTH_SHORT).show();
+        Intent myIntent = new Intent(ProductorActivity.this, GaleriaActivity.class);
+        myIntent.putExtra("fotos",productor.getImagenes());
+        ProductorActivity.this.startActivity(myIntent);
+
     }
 
     public void verExperiencias(View view){
@@ -109,5 +114,32 @@ public class ProductorActivity extends BaseActivityWithToolBar implements Recive
                 Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
             }
         }
+    }
+
+    public void llamarTelefono(View view) {
+        TextView textView = (TextView) view;
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:" + textView.getText()));
+        startActivity(callIntent);
+    }
+
+    public void llamarCelular(View view) {
+        TextView textView = (TextView) view;
+        Intent callIntent = new Intent(Intent.ACTION_DIAL);
+        callIntent.setData(Uri.parse("tel:" + textView.getText()));
+        startActivity(callIntent);
+    }
+
+    public void enviarEmail(View view) {
+        TextView textView = (TextView) view;
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:"));
+        String[] to = {textView.getText().toString()};
+        intent.putExtra(Intent.EXTRA_EMAIL, to);
+        intent.putExtra(Intent.EXTRA_SUBJECT, "Consulta de Actvidad");
+        intent.putExtra(Intent.EXTRA_TEXT, " ");
+        //intent.setType("message/rfc822");
+        Intent chooser = Intent.createChooser(intent, "Send Email...");
+        startActivity(chooser);
     }
 }
