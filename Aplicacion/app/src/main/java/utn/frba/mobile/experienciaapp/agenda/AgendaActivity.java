@@ -9,6 +9,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +39,7 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
     private RecycleCardAdapter recycleCardAdapter;
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView cardViewRV;
+    private Turista turistaLogueado;
 
     private List<Reserva> reservas = new ArrayList<>();
 
@@ -44,24 +49,26 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
         setContentView(R.layout.activity_agenda);
         initComponenteReference();
         //populateExperiencias();
+        FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+        FirebaseUser fuser=firebaseAuth.getCurrentUser();
 
-        /*
-        Turista turistaRegisterTest = new Turista();
-        turistaRegisterTest.setEmail("ejemplo@gerger.com");
-        turistaRegisterTest.setFirebaseToken("wegnwegwe8u9u443lklk");
-        Turista.SignIn(turistaRegisterTest).enqueue(WSRetrofit.ParseResponseWS(this,SIGN_IN_TEST));
-        */
+        if(fuser==null){
+            Turista turistaRegisterTest = new Turista();
+            turistaRegisterTest.setEmail(fuser.getEmail());
+            turistaRegisterTest.setFirebaseToken(fuser.getIdToken(true).toString());
+            Turista.SignIn(turistaRegisterTest).enqueue(WSRetrofit.ParseResponseWS(this,SIGN_IN_TEST));
+            Toast.makeText(getApplicationContext(),"Debe iniciar session.",Toast.LENGTH_LONG).show();
+        }else{
 
-        Turista turista_test = new Turista();
-        turista_test.setId(2);
-        turista_test.setLoginToken("bcff836d782a4ef5bfec6946804d5cdf");
-        Reserva.GetReservasOf(turista_test.getId(),turista_test.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this,GET_RESERVAS));
+            Reserva.GetReservasOf(turistaLogueado.getId(),turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this,GET_RESERVAS));
+        }
+
     }
 
     private void initComponenteReference(){
         this.layoutManager=new GridLayoutManager(this,1);
         this.cardViewRV=findViewById(R.id.cardViewRV);
-        List<Reserva> reservas=AgendaService.getInstance().getMisReservas();
+    //    List<Reserva> reservas=AgendaService.getInstance().getMisReservas();
         this.cardViewRV.setHasFixedSize(true);
         this.cardViewRV.setLayoutManager(this.layoutManager);
         this.recycleCardAdapter=new RecycleCardAdapter(this,reservas);
@@ -90,7 +97,7 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
             //TODO: DELETE SOLO PARA TEST
             case SIGN_IN_TEST:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Turista){
-                    //turistaCreado = responseWS.getResult().get(0)
+                    turistaLogueado = (Turista) responseWS.getResult().get(0);
                 }else{
                     //Do somthing
                 }

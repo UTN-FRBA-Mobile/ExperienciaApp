@@ -10,7 +10,7 @@ import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 public class Turista extends ModeloGenerico{
     @SerializedName("id")
     @Expose
-    private Integer id;
+    private String id;
     @SerializedName("email")
     @Expose
     private String email;
@@ -56,34 +56,14 @@ public class Turista extends ModeloGenerico{
                 l_lat
         );
 
-        /*
-        Ejemplo de respuesta del server
-        ﻿{
-            "value": "0",
-            "msg": "El turista se creo correctamente.",
-            "result": [
-                {
-                    "id": 8,
-                    "email": "test@test1234.com",
-                    "login_token": "8477b7194568bf767391dcaa30fcb207",
-                    "login_type": "GOOGLE",
-                    "firebase_token": "enkjewb4kj5b34jk",
-                    "last_longitud": null,
-                    "last_latitud": null,
-                    "last_geo_update": null,
-                    "last_request": "2018-06-20 21:13",
-                    "class": "Turista"
-                }
-            ]
-        }
-        */
+
     }
 
-    public Integer getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(String id) {
         this.id = id;
     }
 
