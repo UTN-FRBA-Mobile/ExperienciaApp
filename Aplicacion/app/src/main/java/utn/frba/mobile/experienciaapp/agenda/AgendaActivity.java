@@ -52,15 +52,16 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
         FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
         FirebaseUser fuser=firebaseAuth.getCurrentUser();
 
-        if(fuser==null){
-            Turista turistaRegisterTest = new Turista();
-            turistaRegisterTest.setEmail(fuser.getEmail());
-            turistaRegisterTest.setFirebaseToken(fuser.getIdToken(true).toString());
-            Turista.SignIn(turistaRegisterTest).enqueue(WSRetrofit.ParseResponseWS(this,SIGN_IN_TEST));
-            Toast.makeText(getApplicationContext(),"Debe iniciar session.",Toast.LENGTH_LONG).show();
-        }else{
-
+        if(fuser!=null){
+            Turista turistaLogueado = new Turista();
+            turistaLogueado.setId(fuser.getUid());
+            turistaLogueado.setEmail(fuser.getEmail());
+            turistaLogueado.setFirebaseToken(fuser.getIdToken(true).toString());
+            Turista.SignIn(turistaLogueado).enqueue(WSRetrofit.ParseResponseWS(this,SIGN_IN_TEST));
             Reserva.GetReservasOf(turistaLogueado.getId(),turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this,GET_RESERVAS));
+        }else{
+            Toast.makeText(getApplicationContext(),"Debe iniciar session.",Toast.LENGTH_LONG).show();
+
         }
 
     }
@@ -89,6 +90,7 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
                     reservas.clear();
                     reservas = Reserva.addResponseToList(reservas,responseWS);
                 }else{
+                    Toast.makeText(getApplicationContext(),"No tiene reservas agendadas.",Toast.LENGTH_LONG).show();
                     reservas = new ArrayList<>();
                 }
                 break;
