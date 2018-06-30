@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -18,6 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.squareup.picasso.Picasso;
@@ -30,9 +35,12 @@ import utn.frba.mobile.experienciaapp.models.Turista;
 import utn.frba.mobile.experienciaapp.service.LoginService;
 import utn.frba.mobile.experienciaapp.service.SessionService;
 
-public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    private SharedPreferences sharedPref;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 
+public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+    private SharedPreferences sharedPref;
+    private GoogleApiClient googleApiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -143,8 +151,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             Intent i = new Intent(getBaseContext(), AgendaActivity.class);
             startActivity(i);
         } else if (id == R.id.nav_logout) {
-            FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
-            firebaseAuth.signOut();
+            signOut();
             loginBehaviorButton();
             Toast.makeText(HomeActivity.this,"Se ha deslogueado con exito.", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_acerca) {
@@ -155,5 +162,59 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(LoginService.authStateListener!=null){
+            FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+            firebaseAuth.removeAuthStateListener(LoginService.authStateListener);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        try{
+            //Inicializacion de google account
+            GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build();
+            googleApiClient=new GoogleApiClient.Builder(this).enableAutoManage(this,this).addApi(Auth.GOOGLE_SIGN_IN_API,gso ).build();
+        }catch(Exception e){
+            //
+        }
+
+    }
+
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        //Inicializacion de google account
+        GoogleSignInOptions gso=new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestIdToken(getString(R.string.default_web_client_id)).requestEmail().build();
+        googleApiClient=new GoogleApiClient.Builder(this).enableAutoManage(this,this).addApi(Auth.GOOGLE_SIGN_IN_API,gso ).build();
+    }
+
+    private void signOut(){
+        FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+        firebaseAuth.signOut();
+
+        Auth.GoogleSignInApi.signOut(googleApiClient).setResultCallback(new ResultCallback<Status>() {
+            @Override
+            public void onResult(@NonNull Status status) {
+                if(status.isSuccess()){
+                    Intent i =new Intent(HomeActivity.this,HomeActivity.class);
+                    startActivity(i);
+                    finish();
+                }else{
+                    Toast.makeText(HomeActivity.this,"Error en google signOut", Toast.LENGTH_LONG);
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
     }
 }

@@ -20,6 +20,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
+
 import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.login.LoginActivity;
@@ -30,9 +31,10 @@ public class LoginService  {
 
     private static final int SIGN_ING_GOOGLE_CODE = 1;
     private FirebaseAuth firebaseAuth;
-    private FirebaseAuth.AuthStateListener authStateListener;
-    private GoogleApiClient googleApiClient;
+    public static FirebaseAuth.AuthStateListener authStateListener;
+    public GoogleApiClient googleApiClient;
     private LoginActivity loginActivity;
+
 
 
     public static LoginService builder(LoginActivity activiy){//
