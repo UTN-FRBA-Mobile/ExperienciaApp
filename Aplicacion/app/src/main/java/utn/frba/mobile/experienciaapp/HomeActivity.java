@@ -102,6 +102,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             ll_user.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    LoginActivity.activityDestino=BuscarExperienciaActivity.class;
                     Intent i = new Intent(getBaseContext(), LoginActivity.class);
                     startActivity(i);
                 }

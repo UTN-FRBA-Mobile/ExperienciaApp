@@ -21,6 +21,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 
 
+import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.login.LoginActivity;
@@ -34,14 +35,17 @@ public class LoginService  {
     public static FirebaseAuth.AuthStateListener authStateListener;
     public GoogleApiClient googleApiClient;
     private LoginActivity loginActivity;
+    private Class activityDestino;
+    private Context context;
 
 
-
-    public static LoginService builder(LoginActivity activiy){//
-        return new LoginService(activiy);
+    public static LoginService builder(LoginActivity activiy,Context context, Class activityDestino){//
+        return new LoginService(activiy,context,activityDestino);
     }
 
-    private LoginService(LoginActivity activiy){
+    private LoginService(LoginActivity activiy,Context context, Class activityDestino){
+        this.context=context;
+        this.activityDestino=activityDestino;
         this.loginActivity=activiy;
         this.sharedPref = this.loginActivity.getPreferences(Context.MODE_PRIVATE);
         firebaseAuth=FirebaseAuth.getInstance();
@@ -78,8 +82,8 @@ public class LoginService  {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if(task.isSuccessful()){
                         Toast.makeText(loginActivity,"GOOGLE Login exitoso", Toast.LENGTH_SHORT).show();
-                        Intent i=new Intent(loginActivity,BuscarExperienciaActivity.class);
-                        loginActivity.startActivity(i);
+//                        Intent i=new Intent(context,activityDestino);
+//                        loginActivity.startActivity(i);
                         loginActivity.finish();
                     }else{
                         Toast.makeText(loginActivity,"GOOGLE Login invalido", Toast.LENGTH_SHORT).show();

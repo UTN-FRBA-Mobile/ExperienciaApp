@@ -91,6 +91,7 @@ public class SessionService {
                         turistaLogueado = (Turista) responseWS.getResult().get(0);
                     }else{
                         //Do somthing
+                        Log.w(TAG,"No se tiene un responseWS por Turista.singIn");
                     }
                     break;
                 }

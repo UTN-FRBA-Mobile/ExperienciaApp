@@ -25,6 +25,7 @@ import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
 import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+import utn.frba.mobile.experienciaapp.login.LoginActivity;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 import utn.frba.mobile.experienciaapp.models.Reserva;
@@ -97,73 +98,77 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
     }
 
-    public void openReserveModal(View view){
+    public void openReserveModal(final View view){
+        SessionService sessionService=SessionService.getInstance();
+        if(sessionService.isSessionActive(ExperienciaDetailActivity.this)) {
+            reservaModalAlert = new Alert(ExperienciaDetailActivity.this);
 
-        reservaModalAlert = new Alert(ExperienciaDetailActivity.this);
+            LinearLayout modal_content = new LinearLayout(ExperienciaDetailActivity.this);
+            modal_content.setOrientation(LinearLayout.VERTICAL);
+            modal_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
 
-        LinearLayout modal_content = new LinearLayout(ExperienciaDetailActivity.this);
-        modal_content.setOrientation(LinearLayout.VERTICAL);
-        modal_content.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL);
-
-        LayoutInflater inflater = LayoutInflater.from(getBaseContext());
-
-
-        reservaModalView = inflater.inflate(R.layout.reserva_modal, modal_content, false);
-
-        spinnerDates = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
-        List<String> horarios = new ArrayList<>();
-
-        for(FechaExperiencia fecha: experiencia.getFechasExperiencia()){
-            horarios.add(fecha.getFechaHora());
-        }
-
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(ExperienciaDetailActivity.this, android.R.layout.simple_spinner_item, horarios);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerDates.setAdapter(dataAdapter);
+            final LayoutInflater inflater = LayoutInflater.from(getBaseContext());
 
 
+            reservaModalView = inflater.inflate(R.layout.reserva_modal, modal_content, false);
 
-        View.OnClickListener aceptOnclick = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SessionService sessionService=SessionService.getInstance();
-                if(sessionService.isSessionActive(ExperienciaDetailActivity.this)){
+            spinnerDates = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
+            List<String> horarios = new ArrayList<>();
 
-                    EditText cantPersonasEditText = (EditText) reservaModalView.findViewById(R.id.cantPersonas);
-                    Spinner horarioSpinner = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
-
-                    if(cantPersonasEditText != null && cantPersonasEditText.getText() != null &&
-                            cantPersonasEditText.getText().toString() != null && !cantPersonasEditText.getText().toString().isEmpty() &&
-                            horarioSpinner != null && horarioSpinner.getSelectedItem() != null && horarioSpinner.getSelectedItem().toString() != null &&
-                            !horarioSpinner.getSelectedItem().toString().isEmpty()
-                            ){
-
-                        String cantPersonas = cantPersonasEditText.getText().toString();
-                        String horario = horarioSpinner.getSelectedItem().toString();
-
-                        Turista turista=sessionService.getTurista();
-                        //Aca va la llamada para agregar Reserva
-
-                        Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + "." ,Toast.LENGTH_SHORT).show();
-                        reservaModalAlert.Dismiss();
-
-
-                    } else {
-                        Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Complete los datos requeridos" ,Toast.LENGTH_SHORT).show();
-                    }
-                }else{
-
-                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Debe loguearse para reservar. Ver menu lateral." ,Toast.LENGTH_LONG).show();
-                }
-
-
-
-
+            for (FechaExperiencia fecha : experiencia.getFechasExperiencia()) {
+                horarios.add(fecha.getFechaHora());
             }
 
-        };
+            ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(ExperienciaDetailActivity.this, android.R.layout.simple_spinner_item, horarios);
+            dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinnerDates.setAdapter(dataAdapter);
 
-        reservaModalAlert.ShowFilterView(reservaModalView, "Reservar", aceptOnclick, false);
+
+            View.OnClickListener aceptOnclick = new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    SessionService sessionService = SessionService.getInstance();
+                    if (sessionService.isSessionActive(ExperienciaDetailActivity.this)) {
+                        EditText cantPersonasEditText = (EditText) reservaModalView.findViewById(R.id.cantPersonas);
+                        Spinner horarioSpinner = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
+
+                        if (cantPersonasEditText != null && cantPersonasEditText.getText() != null &&
+                                cantPersonasEditText.getText().toString() != null && !cantPersonasEditText.getText().toString().isEmpty() &&
+                                horarioSpinner != null && horarioSpinner.getSelectedItem() != null && horarioSpinner.getSelectedItem().toString() != null &&
+                                !horarioSpinner.getSelectedItem().toString().isEmpty()
+                                ) {
+
+                            String cantPersonas = cantPersonasEditText.getText().toString();
+                            String horario = horarioSpinner.getSelectedItem().toString();
+
+                            Turista turista = sessionService.getTurista();
+                            //Aca va la llamada para agregar Reserva
+
+                            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + ".", Toast.LENGTH_SHORT).show();
+                            reservaModalAlert.Dismiss();
+
+
+                        } else {
+                            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Complete los datos requeridos", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Debe loguearse para reservar.", Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }
+
+            };
+
+            reservaModalAlert.ShowFilterView(reservaModalView, "Reservar", aceptOnclick, false);
+        }   else{
+            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Debe loguearse para reservar." ,Toast.LENGTH_SHORT).show();
+            LoginActivity.activityDestino=ExperienciaDetailActivity.class;
+            Intent i = new Intent(getBaseContext(), LoginActivity.class);
+            startActivityForResult(i,66);
+
+
+        }
 
     }
 

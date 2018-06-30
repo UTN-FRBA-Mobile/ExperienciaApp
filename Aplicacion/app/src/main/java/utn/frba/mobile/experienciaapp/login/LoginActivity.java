@@ -39,13 +39,14 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
     private EditText edtPassword;
     private SignInButton btnSignInGoogle;
     private LoginService loginService;
+    public static Class activityDestino;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         bindElements();
-        loginService=LoginService.builder(this);
+        loginService=LoginService.builder(this, this.getBaseContext(),activityDestino);
         defineBehaviour();
     }
 
