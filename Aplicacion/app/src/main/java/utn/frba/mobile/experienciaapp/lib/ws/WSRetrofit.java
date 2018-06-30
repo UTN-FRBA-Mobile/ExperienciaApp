@@ -125,6 +125,19 @@ public class WSRetrofit {
         );
     }
 
+
+    public static void ParseResponseWS(Response<ResponseWS> response,final ReciveResponseWS reciveResponseWS,final int accion){
+        if(response != null && response.body() != null) {
+            response.body().setResult(ParseResult(response.body()));
+            reciveResponseWS.ReciveResponseWS(response.body(), accion);
+            Log.e("RETROFIT", "Success");
+        }else{
+            Log.e("RETROFIT","ERROR Response NULL");
+            reciveResponseWS.ReciveResponseWS(null, accion);
+        }
+
+    }
+
     public static Callback<ResponseWS> ParseResponseWS(final ReciveResponseWS reciveResponseWS,final int accion){
         return new Callback<ResponseWS>() {
             @Override

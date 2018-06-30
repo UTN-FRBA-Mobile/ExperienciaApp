@@ -137,6 +137,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
                     Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + "." ,Toast.LENGTH_SHORT).show();
                     reservaModalAlert.Dismiss();
+
                 } else {
                     Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(),"Complete los datos requeridos" ,Toast.LENGTH_SHORT).show();
                 }
