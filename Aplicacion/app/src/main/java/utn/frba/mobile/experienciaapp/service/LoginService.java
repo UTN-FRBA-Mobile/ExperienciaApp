@@ -31,24 +31,12 @@ public class LoginService  {
     private static final int SIGN_ING_GOOGLE_CODE = 1;
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
-    private static LoginService instance=null;
     private GoogleApiClient googleApiClient;
     private LoginActivity loginActivity;
 
 
-    public static LoginService getInstance(){
-        if(instance==null){
-            throw new IllegalStateException("Debe ejecutarse almenos una vez el builder() para constuirl la inscancia");
-        }
-        return instance;
-    }
-
-    public static LoginService builder(LoginActivity activiy){
-        if(instance!=null){
-            return instance;
-        }
-        instance=new LoginService(activiy);
-        return instance;
+    public static LoginService builder(LoginActivity activiy){//
+        return new LoginService(activiy);
     }
 
     private LoginService(LoginActivity activiy){

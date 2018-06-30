@@ -18,15 +18,9 @@ import utn.frba.mobile.experienciaapp.models.Turista;
 
 public class SessionService {
     private static final String TAG = "SessionService";
-    private int intentos=0;
-    private int CANTIDAD_MAIXMA_INTENTOS=5;
-    private int TIEMPO_ESPERA_ENTRE_CALLBACK=5000;
-
-
     private static  SessionService instance=null;
     private Turista turistaLogueado=null;
-    FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
-    FirebaseUser fuser=firebaseAuth.getCurrentUser();
+
 
     public static SessionService getInstance(){
         if (instance==null){
@@ -36,45 +30,33 @@ public class SessionService {
     }
 
     public boolean isSessionActive(AppCompatActivity activity){
+        FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
+        FirebaseUser fuser=firebaseAuth.getCurrentUser();
         if(fuser!=null) {
             Turista turista = new Turista();
             turista.setId(fuser.getUid());
             turista.setEmail(fuser.getEmail());
             turista.setFirebaseToken(fuser.getIdToken(true).toString());
-            try {
-                turistaLogueado=new ExecuteTask(activity).execute(turista).get();
-            } catch (Exception e) {
-                e.printStackTrace();
+            if(turistaLogueado==null){
+                try {
+                    turistaLogueado=new ExecuteTask(activity).execute(turista).get();
+                    //Esto esta mockeado porque aun no registre
+                    turistaLogueado.setId(fuser.getUid());
+                    turistaLogueado.setEmail(fuser.getEmail());
+                    turistaLogueado.setImageUrl(fuser.getPhotoUrl());
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+
             }
-            //WSRetrofit.ParseResponseWS(Turista.SignIn(turista).execute(),this, SIGN_IN_TEST);
-
-
-            //Turista.SignIn(turista).enqueue(WSRetrofit.ParseResponseWS(this, SIGN_IN_TEST));
-
             return true;
+        }else{
+            turistaLogueado=null;
         }
-
         return false;
     }
 
     public Turista getTurista(){
-//        if(turistaLogueado==null && intentos<CANTIDAD_MAIXMA_INTENTOS){
-//            try {
-//                Thread.sleep(TIEMPO_ESPERA_ENTRE_CALLBACK);
-//            } catch (InterruptedException e) {
-//                Log.w(TAG,e);
-//            }
-//            intentos++;
-//            Log.w(TAG,"Intengo de espera de callback numero: "+intentos);
-//            return getTurista();
-//        }
-//        if(turistaLogueado==null && intentos>=CANTIDAD_MAIXMA_INTENTOS){
-//            Log.w(TAG,"Se alcanzo la cantidad maxima de intetnos");
-//            Log.w(TAG,"Verificar que se haya iniciado session o se consulta antes por el metodo isSessionActive()");
-//            throw new IllegalStateException("Se supero la cantidad maximas de intentos de espera de login, o nunca inicio session de usuario");
-//        }
-//        intentos=0;
-//        Log.w(TAG,"Turista recuperado en "+intentos+" intentos.");
         return turistaLogueado;
     }
 

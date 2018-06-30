@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         bindElements();
-        loginService=LoginService.builder(this).getInstance();
+        loginService=LoginService.builder(this);
         defineBehaviour();
     }
 

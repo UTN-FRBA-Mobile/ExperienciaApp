@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -25,7 +26,9 @@ import utn.frba.mobile.experienciaapp.agenda.AgendaActivity;
 import utn.frba.mobile.experienciaapp.experiencia.BuscarExperienciaActivity;
 import utn.frba.mobile.experienciaapp.lib.utils.Alert;
 import utn.frba.mobile.experienciaapp.login.LoginActivity;
+import utn.frba.mobile.experienciaapp.models.Turista;
 import utn.frba.mobile.experienciaapp.service.LoginService;
+import utn.frba.mobile.experienciaapp.service.SessionService;
 
 public class HomeActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     private SharedPreferences sharedPref;
@@ -84,9 +87,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
 
         navigationView.getMenu().findItem(R.id.nav_logout).setVisible(false);
 
-        FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
-        FirebaseUser fuser=firebaseAuth.getCurrentUser();
-        if(fuser==null) {
+        if(!SessionService.getInstance().isSessionActive(this)) {
             usersameTV.setText("No registrado");
             emailTV.setText("-");
             Picasso.get().load(R.mipmap.ic_launcher_round).into(profileImg);
@@ -98,10 +99,18 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
                 }
             });
         }else{
-            Picasso.get().load(fuser.getPhotoUrl()).into(profileImg);
+            Turista turista=SessionService.getInstance().getTurista();
+            Picasso.get().load(turista.getImageUrl()).into(profileImg);
             usersameTV.setText("Registrado");
-            emailTV.setText(fuser.getEmail());
+            emailTV.setText(turista.getEmail());
             navigationView.getMenu().findItem(R.id.nav_logout).setVisible(true);
+            ll_user.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(HomeActivity.this,"Session ya iniciada.", Toast.LENGTH_SHORT).show();
+
+                }
+            });
         }
     }
 
@@ -137,6 +146,7 @@ public class HomeActivity extends AppCompatActivity implements NavigationView.On
             FirebaseAuth firebaseAuth=FirebaseAuth.getInstance();
             firebaseAuth.signOut();
             loginBehaviorButton();
+            Toast.makeText(HomeActivity.this,"Se ha deslogueado con exito.", Toast.LENGTH_SHORT).show();
         } else if (id == R.id.nav_acerca) {
             Alert alertAcerca = new Alert(this);
             alertAcerca.Show("Equipo Violeta - TP Mobile","Sobre Nosotros");

@@ -37,7 +37,10 @@ public class Reserva extends ModeloGenerico{
                 turista_id,
                 token
         );
+
     }
+
+
 
     public static List<Reserva> addResponseToList(List<Reserva> reservas, ResponseWS responseWS){
         if(responseWS != null && !responseWS.getResult().isEmpty()){

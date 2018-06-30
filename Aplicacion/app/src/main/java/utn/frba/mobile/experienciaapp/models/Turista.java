@@ -1,5 +1,7 @@
 package utn.frba.mobile.experienciaapp.models;
 
+import android.net.Uri;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -35,6 +37,8 @@ public class Turista extends ModeloGenerico{
     @SerializedName("last_request")
     @Expose
     private String lastRequest;
+
+    private Uri imageUrl;
 
     public static Call<ResponseWS> SignIn(Turista turista){
         //TODO: Validacion de turista seteado
@@ -129,5 +133,13 @@ public class Turista extends ModeloGenerico{
 
     public void setLastRequest(String lastRequest) {
         this.lastRequest = lastRequest;
+    }
+
+    public Uri getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(Uri imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }
