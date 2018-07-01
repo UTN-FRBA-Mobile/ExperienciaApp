@@ -37,13 +37,14 @@
     //Login
     <string name="hint_email">Email</string>
     <string name="hint_password">Password</string>
-    <string name="create_account_button">Create Account</string>
-    <string name="signin_button">Sign In</string>
-    <string name="signout_button">Sign Out</string>
+    <string name="create_account_button">Registrarse</string>
+    <string name="signin_button">Login</string>
+    <string name="signout_button">Logout</string>
     <string name="gastronomia">Gastronomia</string>
     <string name="deportes">Deportes</string>
     <string name="relax">Relax</string>
     <string name="tituloPopupFavoritos">Favoritos</string>
     <string name="title_activity_puntos_de_interes">PuntosDeInteresActivity</string>
     <string name="title_activity_experiencias_productor">ExperienciasProductorActivity</string>
+    <string name="google_sign_up">Login con gmail</string>
 </resources>

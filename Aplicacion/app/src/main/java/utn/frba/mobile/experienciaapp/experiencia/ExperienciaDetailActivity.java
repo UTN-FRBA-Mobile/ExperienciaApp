@@ -1,6 +1,8 @@
 package utn.frba.mobile.experienciaapp.experiencia;
 
+import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
@@ -8,6 +10,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -17,6 +20,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import utn.frba.mobile.experienciaapp.BaseActivityWithToolBar;
 import utn.frba.mobile.experienciaapp.R;
@@ -43,6 +47,9 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
     public Alert reservaModalAlert;
     public View reservaModalView;
     public Spinner spinnerDates;
+    private List<Reserva> reservas;
+    private Button reservarBT;
+    private boolean estaReservado=false;
 
     Alert loadingAlert = new Alert(this);
 
@@ -54,9 +61,13 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
         Intent intent = getIntent();
         Integer id = intent.getIntExtra("id", 0);
-        Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this,GET_DETALLE));
-
+        if(SessionService.getInstance().isSessionActive(this)) {
+            Turista turistaLogueado = SessionService.getInstance().getTurista();
+            Reserva.GetReservasOf(turistaLogueado.getId(), turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this, GET_RESERVAS));
+        }
+            Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this, GET_DETALLE));
         loadingAlert.Loading();
+        reservarBT= (Button) findViewById(R.id.reservarBT);
 
     }
 
@@ -129,6 +140,10 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 public void onClick(View v) {
                     SessionService sessionService = SessionService.getInstance();
                     if (sessionService.isSessionActive(ExperienciaDetailActivity.this)) {
+                        if(estaReservado){
+                            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva ya realizada..", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
                         EditText cantPersonasEditText = (EditText) reservaModalView.findViewById(R.id.cantPersonas);
                         Spinner horarioSpinner = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
 
@@ -142,11 +157,25 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                             String horario = horarioSpinner.getSelectedItem().toString();
 
                             Turista turista = sessionService.getTurista();
-                            //Aca va la llamada para agregar Reserva
+                            ReservaData data=new ReservaData();
+                            data.setTurista(turista);
+                            data.setCantPersonas(cantPersonas);
+                            data.setIdFechaSeleccionada(getIdFechaSeleccionada(horario));
+                            //data.setTotal(""+Float.valueOf(experiencia.getPrecio())*Integer.valueOf(cantPersonas));
+                            data.setTotal(experiencia.getPrecio());
+                            //data.setTotal();
+                            try {
+                                Reserva reserva=new ReservarTask(ExperienciaDetailActivity.this).execute(data).get();
+                                if(reserva!=null){
+                                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + ".", Toast.LENGTH_SHORT).show();
+                                    reservaModalAlert.Dismiss();
+                                }else{
+                                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Se genero un error, no se puedo concretar la reserva.", Toast.LENGTH_SHORT).show();
+                                }
 
-                            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + ".", Toast.LENGTH_SHORT).show();
-                            reservaModalAlert.Dismiss();
-
+                            } catch (Exception e) {
+                                throw new IllegalStateException(e);
+                            }
 
                         } else {
                             Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Complete los datos requeridos", Toast.LENGTH_SHORT).show();
@@ -172,9 +201,37 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
     }
 
+    private int getIdFechaSeleccionada(String fecha){
+        for(FechaExperiencia fechaExperiencia:experiencia.getFechasExperiencia()){
+            if(fecha.equals(fechaExperiencia.getFechaHora())){
+                return fechaExperiencia.getId();
+            }
+        }
+        throw new IllegalStateException("No se pudo localizar un Id para la fechaHora: "+fecha);
+    }
+
+    private boolean estaReservado(){
+        for(Reserva reserva: reservas){
+            if(reserva.getFechaExperiencia()!=null && experiencia.getId() == reserva.getFechaExperiencia().getExperiencia().getId()){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public void ReciveResponseWS(ResponseWS responseWS, int accion) {
         switch(accion){
+            case GET_RESERVAS:{
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Reserva){
+                    reservas.clear();
+                    reservas = Reserva.addResponseToList(reservas,responseWS);
+                    estaReservado=estaReservado();
+                }else{
+                    reservas = new ArrayList<>();
+                }
+                break;
+            }
             case GET_DETALLE:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Experiencia) {
                     experiencia = (Experiencia) responseWS.getResult().get(0);
@@ -209,9 +266,94 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 break;
             }
 
+
             default:{
                 Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
             }
         }
     }
+
+    private class ReservaData{
+        private Turista turista;
+        private String cantPersonas;
+        private String total;
+        private int idFechaSeleccionada;
+
+        public Turista getTurista() {
+            return turista;
+        }
+
+        public void setTurista(Turista turista) {
+            this.turista = turista;
+        }
+
+        public String getCantPersonas() {
+            return cantPersonas;
+        }
+
+        public void setCantPersonas(String cantPersonas) {
+            this.cantPersonas = cantPersonas;
+        }
+
+        public String getTotal() {
+            return total;
+        }
+
+        public void setTotal(String total) {
+            this.total = total;
+        }
+
+        public int getIdFechaSeleccionada() {
+            return idFechaSeleccionada;
+        }
+
+        public void setIdFechaSeleccionada(int idFechaSeleccionada) {
+            this.idFechaSeleccionada = idFechaSeleccionada;
+        }
+    }
+
+    private class ReservarTask extends AsyncTask<ReservaData,Void,Reserva> implements ReciveResponseWS {
+
+        private Context context;
+        private Reserva reserva;
+        public ReservarTask(Context context) {
+            this.context = context;
+        }
+
+
+        @Override
+        protected Reserva doInBackground(ReservaData... reservaDatas) {
+            ReservaData data=reservaDatas[0];
+            try {
+                WSRetrofit.ParseResponseWS(Reserva.ReservarExperiencia(data.getTurista().getId(),data.getTurista().getLoginToken(),data.getIdFechaSeleccionada(),data.getCantPersonas(),data.getTotal()).execute(),this, RESERVAR_EXPERIENCIA);
+
+            }catch (Exception e){
+                throw new IllegalStateException(e);
+            }
+            return reserva;
+        }
+
+
+        @Override
+        public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+            switch(accion){
+                //TODO: DELETE SOLO PARA TEST
+                case RESERVAR_EXPERIENCIA:{
+                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Turista){
+                        reserva = (Reserva) responseWS.getResult().get(0);
+                    }else{
+                        //Do somthing
+                        Log.w(TAG,"Reserva no satisfactoria, "+responseWS.getMsg());
+                    }
+                    break;
+                }
+
+
+                default:{
+                    Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+                }
+            }
+        }
+    }
+
 }

@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -54,14 +55,23 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         this.btnCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loginService.createAccount(edtEmail.getText().toString(),edtPassword.getText().toString());
+                if(edtEmail.getText().toString().isEmpty() || edtPassword.getText().toString().isEmpty()){
+                    Toast.makeText(LoginActivity.this,"Email o password incompletos", Toast.LENGTH_SHORT).show();
+                }else {
+                    loginService.createAccount(edtEmail.getText().toString(), edtPassword.getText().toString());
+                }
             }
         });
 
         this.btnSignIn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loginService.singIn(edtEmail.getText().toString(),edtPassword.getText().toString());
+                if(edtEmail.getText().toString().isEmpty() || edtPassword.getText().toString().isEmpty()){
+                    Toast.makeText(LoginActivity.this,"Email o password incompletos", Toast.LENGTH_SHORT).show();
+                }else{
+                    loginService.singIn(edtEmail.getText().toString(),edtPassword.getText().toString());
+                }
+
 
             }
         });
@@ -75,6 +85,8 @@ public class LoginActivity extends AppCompatActivity implements GoogleApiClient.
         edtEmail=this.findViewById(R.id.edtEmail);
         edtPassword=this.findViewById(R.id.edtPassword);
         btnSignInGoogle=this.findViewById(R.id.btnSignInGoogle);
+        TextView textView = (TextView) btnSignInGoogle.getChildAt(0);
+        textView.setText(R.string.google_sign_up);
     }
 
 

@@ -82,12 +82,9 @@ public class LoginService  {
                 public void onComplete(@NonNull Task<AuthResult> task) {
                     if(task.isSuccessful()){
                         Toast.makeText(loginActivity,"GOOGLE Login exitoso", Toast.LENGTH_SHORT).show();
-//                        Intent i=new Intent(context,activityDestino);
-//                        loginActivity.startActivity(i);
                         loginActivity.finish();
                     }else{
                         Toast.makeText(loginActivity,"GOOGLE Login invalido", Toast.LENGTH_SHORT).show();
-
                     }
                 }
             });
@@ -136,11 +133,12 @@ public class LoginService  {
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
                     Toast.makeText(loginActivity,"Login exitoso", Toast.LENGTH_SHORT).show();
-                    Intent i=new Intent(loginActivity,BuscarExperienciaActivity.class);
-                    loginActivity.startActivity(i);
+                    sharedPref.edit().putBoolean("key_logedin",true);
                     loginActivity.finish();
                 }else{
                     Toast.makeText(loginActivity,"Login invalido", Toast.LENGTH_SHORT).show();
+                    sharedPref.edit().putBoolean("key_logedin",false);
+
                 }
             }
         });

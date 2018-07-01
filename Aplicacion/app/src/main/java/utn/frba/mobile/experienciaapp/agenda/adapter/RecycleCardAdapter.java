@@ -1,9 +1,11 @@
 package utn.frba.mobile.experienciaapp.agenda.adapter;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,14 +14,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 import utn.frba.mobile.experienciaapp.R;
+import utn.frba.mobile.experienciaapp.experiencia.ExperienciaDetailActivity;
 import utn.frba.mobile.experienciaapp.experiencia.ProductorActivity;
+import utn.frba.mobile.experienciaapp.lib.ws.ReciveResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 import utn.frba.mobile.experienciaapp.models.Reserva;
+import utn.frba.mobile.experienciaapp.models.Turista;
 
 public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.CardViewHolder> {
+    private static final String TAG = "RecycleCardAdapter";
+
     private List<Reserva> reservas;
     private Context context;
 
@@ -53,10 +63,19 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
         holder.eliminarReservaB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                reservas.remove(position);
-                Toast.makeText(v.getContext(),"Reserva eliminada", Toast.LENGTH_SHORT).show();
-
-                notifyDataSetChanged();
+                EliminarReservaData data=new EliminarReservaData();
+                try {
+                    boolean eliminado=new BorrarReservaTask(context).execute(data).get();
+                    if(eliminado){
+                        reservas.remove(position);
+                        notifyDataSetChanged();
+                        Toast.makeText(v.getContext(),"Reserva eliminada", Toast.LENGTH_SHORT).show();
+                    }else{
+                        Toast.makeText(v.getContext(),"No se pudo eliminar la reserva.", Toast.LENGTH_SHORT).show();
+                    }
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
             }
         });
 //        StringBuilder infoExp=new StringBuilder();
@@ -94,6 +113,72 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
             this.mensajeTV=itemView.findViewById(R.id.mensajeTV);
             this.eliminarReservaB=itemView.findViewById(R.id.eliminarReservaB);
         }
+    }
 
+    private class EliminarReservaData{
+        private Turista turista;
+        private Reserva reserva;
+
+        public Turista getTurista() {
+            return turista;
+        }
+
+        public void setTurista(Turista turista) {
+            this.turista = turista;
+        }
+
+        public Reserva getReserva() {
+            return reserva;
+        }
+
+        public void setReserva(Reserva reserva) {
+            this.reserva = reserva;
+        }
+    }
+
+    private class BorrarReservaTask extends AsyncTask<EliminarReservaData,Void,Boolean> implements ReciveResponseWS {
+
+        private Context context;
+        private boolean fueEliminado=false;
+        public BorrarReservaTask(Context context) {
+            this.context = context;
+        }
+
+
+        @Override
+        protected Boolean doInBackground(EliminarReservaData... datas) {
+            EliminarReservaData data=datas[0];
+            try {
+                WSRetrofit.ParseResponseWS(Reserva.BorrarReservaTurista(data.getTurista().getId(),data.getTurista().getLoginToken(),data.getReserva().getId()).execute(),this, ELIMINAR_RESERVA);
+
+            }catch (Exception e){
+                throw new IllegalStateException(e);
+            }
+            return fueEliminado;
+        }
+
+
+        @Override
+        public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+            switch(accion){
+                //TODO: DELETE SOLO PARA TEST
+                case ELIMINAR_RESERVA:{
+                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Turista){
+                        fueEliminado=true;
+                    }else{
+                        //Do somthing
+                        fueEliminado=false;
+                        Log.w(TAG,"Reserva no satisfactoria, "+responseWS.getMsg());
+                    }
+                    break;
+                }
+
+
+                default:{
+                    fueEliminado=false;
+                    Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+                }
+            }
+        }
     }
 }

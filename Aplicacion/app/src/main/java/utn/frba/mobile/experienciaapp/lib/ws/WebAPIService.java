@@ -60,7 +60,7 @@ public interface WebAPIService {
             @Field("apartado") String apartado,
             @Field("key") String key,
             @Field("accion") String accion,
-            @Field("search") String search,
+            @Field("search") int search,
             @Field("token") String token
     );
 

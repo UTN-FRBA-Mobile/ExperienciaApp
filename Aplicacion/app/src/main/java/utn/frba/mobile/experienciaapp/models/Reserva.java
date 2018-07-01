@@ -29,7 +29,7 @@ public class Reserva extends ModeloGenerico{
     @Expose
     private FechaExperiencia fechaExperiencia;
 
-    public static Call<ResponseWS> GetReservasOf(String turista_id,String token){
+    public static Call<ResponseWS> GetReservasOf(int turista_id,String token){
         return WSRetrofit.getInstance().getInformationOf(
                 WSRetrofit.APARTADO,
                 WSRetrofit.KEY,

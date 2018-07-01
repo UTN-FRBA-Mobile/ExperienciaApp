@@ -12,7 +12,7 @@ import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
 public class Turista extends ModeloGenerico{
     @SerializedName("id")
     @Expose
-    private String id;
+    private int id;
     @SerializedName("email")
     @Expose
     private String email;
@@ -80,11 +80,11 @@ public class Turista extends ModeloGenerico{
         );
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
