@@ -337,9 +337,8 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         @Override
         public void ReciveResponseWS(ResponseWS responseWS, int accion) {
             switch(accion){
-                //TODO: DELETE SOLO PARA TEST
                 case RESERVAR_EXPERIENCIA:{
-                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Turista){
+                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Reserva){
                         reserva = (Reserva) responseWS.getResult().get(0);
                     }else{
                         //Do somthing
