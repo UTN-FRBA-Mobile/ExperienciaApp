@@ -53,6 +53,17 @@ public class Reserva extends ModeloGenerico{
         );
     }
 
+    public static Call<ResponseWS> BorrarReservaTurista(int id_turista,String login_token,int id_reserva){
+        return WSRetrofit.getInstance().borrarReservaTurista(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.BORRAR_RESERVA_TURISTA,
+                login_token,
+                Integer.toString(id_turista),
+                Integer.toString(id_reserva)
+        );
+    }
+
     public static List<Reserva> addResponseToList(List<Reserva> reservas, ResponseWS responseWS){
         if(responseWS != null && !responseWS.getResult().isEmpty()){
             for(Object obj : responseWS.getResult()){

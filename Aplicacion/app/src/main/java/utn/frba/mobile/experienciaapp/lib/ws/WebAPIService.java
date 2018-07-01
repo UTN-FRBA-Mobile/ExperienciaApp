@@ -121,5 +121,17 @@ public interface WebAPIService {
             @Field("cantidad") String cantidad,
             @Field("total") String total
     );
+
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<ResponseWS> borrarReservaTurista(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("login_token") String email,
+            @Field("turista") String turista_id,
+            @Field("reserva") String reserva_id
+    );
 }
 

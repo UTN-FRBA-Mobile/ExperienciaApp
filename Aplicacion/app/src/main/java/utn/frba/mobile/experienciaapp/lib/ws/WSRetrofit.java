@@ -36,6 +36,7 @@ public class WSRetrofit {
     public static final String GET_MI_PERFIL = "get_mi_perfil";
     public static final String GET_FECHAS_OF_EXPERIENCIA = "get_fechas_of_experiencia";
     public static final String RESERVAR_EXPERIENCIA = "reservar_experiencia";
+    public static final String BORRAR_RESERVA_TURISTA = "borrar_reserva_turista";
 
     public static final String SIGN_IN_TURISTA = "sign_in_turista";
     public static final String LOGIN_TURISTA = "login_turista";
