@@ -211,6 +211,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
     }
 
     private boolean estaReservado(){
+        if(reservas==null || reservas.isEmpty()) return false;
         for(Reserva reserva: reservas){
             if(reserva.getFechaExperiencia()!=null && experiencia.getId() == reserva.getFechaExperiencia().getExperiencia().getId()){
                 return true;
@@ -224,7 +225,6 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         switch(accion){
             case GET_RESERVAS:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Reserva){
-                    reservas.clear();
                     reservas = Reserva.addResponseToList(reservas,responseWS);
                     estaReservado=estaReservado();
                 }else{
