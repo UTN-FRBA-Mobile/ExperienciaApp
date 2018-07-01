@@ -100,6 +100,17 @@ public interface WebAPIService {
     @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
     @FormUrlEncoded
     @POST(PARTIAL_URL)
+    Call<ResponseWS> loginTurista(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("email") String email,
+            @Field("firebase_token") String firebase_token
+    );
+
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
     Call<ResponseWS> reservarExperiencia(
             @Field("apartado") String apartado,
             @Field("key") String key,

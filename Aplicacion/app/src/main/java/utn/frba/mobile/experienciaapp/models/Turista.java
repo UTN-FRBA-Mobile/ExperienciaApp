@@ -59,8 +59,25 @@ public class Turista extends ModeloGenerico{
                 l_long,
                 l_lat
         );
+    }
 
+    public static Call<ResponseWS> loginTurista(Turista turista){
+        //TODO: Validacion de turista seteado
+        String l_long = "";
+        String l_lat = "";
 
+        if(turista.getLastLongitud() != null)
+            l_long = turista.getLastLongitud().toString();
+        if(turista.getLastLatitud() != null)
+            l_lat = turista.getLastLatitud().toString();
+
+        return WSRetrofit.getInstance().loginTurista(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.LOGIN_TURISTA,
+                turista.getEmail(),
+                turista.firebaseToken
+        );
     }
 
     public String getId() {
