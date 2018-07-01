@@ -40,7 +40,18 @@ public class Reserva extends ModeloGenerico{
 
     }
 
-
+    public static Call<ResponseWS> ReservarExperiencia(int id_turista,String login_token,int id_fecha_disponible,String cantidad,String total){
+        return WSRetrofit.getInstance().reservarExperiencia(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.RESERVAR_EXPERIENCIA,
+                Integer.toString(id_turista),
+                login_token,
+                Integer.toString(id_fecha_disponible),
+                cantidad,
+                total
+        );
+    }
 
     public static List<Reserva> addResponseToList(List<Reserva> reservas, ResponseWS responseWS){
         if(responseWS != null && !responseWS.getResult().isEmpty()){

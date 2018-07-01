@@ -7,6 +7,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import retrofit2.Call;
+import utn.frba.mobile.experienciaapp.lib.ws.ResponseWS;
+import utn.frba.mobile.experienciaapp.lib.ws.WSRetrofit;
+
 public class FechaExperiencia extends ModeloGenerico{
     private static SimpleDateFormat dateFormat =new SimpleDateFormat("dd/MM/yyyy hh:mm");
 
@@ -33,6 +37,16 @@ public class FechaExperiencia extends ModeloGenerico{
         this.fecha_hora = fecha_hora;
         this.experiencia = experiencia;
     }
+
+    public static Call<ResponseWS> GetFechasOfExperiencia(int id_experiencia){
+        return WSRetrofit.getInstance().getInformationOf(
+                WSRetrofit.APARTADO,
+                WSRetrofit.KEY,
+                WSRetrofit.GET_FECHAS_OF_EXPERIENCIA,
+                Integer.toString(id_experiencia)
+        );
+    }
+
 
     public Integer getId() {
         return id;

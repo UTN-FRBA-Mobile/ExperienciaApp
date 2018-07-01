@@ -84,9 +84,6 @@ public interface WebAPIService {
             @Field("distancia") String distancia
     );
 
-    /**
-     * Trae informacion dependiendo del paramentro @accion que se le pase y el @search, que puede ser un id, un email, ...
-     */
     @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
     @FormUrlEncoded
     @POST(PARTIAL_URL)
@@ -98,6 +95,20 @@ public interface WebAPIService {
             @Field("firebase_token") String firebase_token,
             @Field("last_longitud") String last_longitud,
             @Field("last_latitud") String last_latitud
+    );
+
+    @Headers({ "Content-Type: application/x-www-form-urlencoded;charset=UTF-8"})
+    @FormUrlEncoded
+    @POST(PARTIAL_URL)
+    Call<ResponseWS> reservarExperiencia(
+            @Field("apartado") String apartado,
+            @Field("key") String key,
+            @Field("accion") String accion,
+            @Field("turista") String turista_id,
+            @Field("token") String token,
+            @Field("fecha") String fecha_id,
+            @Field("cantidad") String cantidad,
+            @Field("total") String total
     );
 }
 
