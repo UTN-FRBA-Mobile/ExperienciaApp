@@ -37,7 +37,7 @@ public class SessionService {
             Turista turista = new Turista();
 //            turista.setId(fuser.getUid());
             turista.setEmail(fuser.getEmail());
-            turista.setFirebaseToken(fuser.getIdToken(true).toString());
+            turista.setFirebaseToken(fuser.getUid());
             if(turistaLogueado==null){
                 try {
                     turistaLogueado=new ExecuteTask(activity).execute(turista).get();

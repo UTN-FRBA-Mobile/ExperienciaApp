@@ -6,6 +6,7 @@ public interface ReciveResponseWS {
     int LOGIN_TURSITA =3;
     int RESERVAR_EXPERIENCIA=10;
     int ELIMINAR_RESERVA=11;
+    int FECHAS_EXPERIENCIA_DISPONIBLES=21;
 
     public void ReciveResponseWS(ResponseWS responseWS,int accion);
 }

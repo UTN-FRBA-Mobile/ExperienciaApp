@@ -225,12 +225,18 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
             case GET_DETALLE:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Experiencia) {
                     experiencia = (Experiencia) responseWS.getResult().get(0);
-
+                    ArrayList<FechaExperiencia> horarios=null;
                     //----------  TODO: remover fechas mockeadas
-                    ArrayList<FechaExperiencia> horarios = new ArrayList<FechaExperiencia>();
-                    horarios.add(new FechaExperiencia(1, 1, "9:00 AM", experiencia));
-                    horarios.add(new FechaExperiencia(2, 1, "11:00 AM", experiencia));
-                    horarios.add(new FechaExperiencia(3, 1, "3:00 PM", experiencia));
+//                    ArrayList<FechaExperiencia> horarios = new ArrayList<FechaExperiencia>();
+//                    horarios.add(new FechaExperiencia(1, 1, "9:00 AM", experiencia));
+//                    horarios.add(new FechaExperiencia(2, 1, "11:00 AM", experiencia));
+//                    horarios.add(new FechaExperiencia(3, 1, "3:00 PM", experiencia));
+                    try {
+                        horarios = new ObtenerFechasDisponiblesTask(ExperienciaDetailActivity.this).execute(experiencia.getId()).get();
+                    }catch (Exception e){
+                        throw new IllegalStateException(e);
+                    }
+
                     experiencia.setFechasExperiencia(horarios);
                     // ----------------
 
@@ -356,6 +362,48 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
             }
         }
     }*/
+     private class ObtenerFechasDisponiblesTask extends AsyncTask<Integer,Void,ArrayList<FechaExperiencia>> implements ReciveResponseWS {
+
+        private Context context;
+        private ArrayList<FechaExperiencia> horarios=new ArrayList<FechaExperiencia>();
+        public ObtenerFechasDisponiblesTask(Context context) {
+            this.context = context;
+        }
+
+
+        @Override
+        protected ArrayList<FechaExperiencia> doInBackground(Integer... reservaDatas) {
+            int idExperiencia=reservaDatas[0];
+            try {
+                WSRetrofit.ParseResponseWS(FechaExperiencia.GetFechasOfExperiencia(idExperiencia).execute(),this, FECHAS_EXPERIENCIA_DISPONIBLES);
+
+            }catch (Exception e){
+                throw new IllegalStateException(e);
+            }
+            return horarios;
+        }
+
+
+        @Override
+        public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+            switch(accion){
+                case FECHAS_EXPERIENCIA_DISPONIBLES:{
+                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult() instanceof ArrayList){
+                        horarios = (ArrayList) responseWS.getResult();
+                    }else{
+                        //Do somthing
+                        Log.w(TAG,"Reserva no satisfactoria, "+responseWS.getMsg());
+                    }
+                    break;
+                }
+
+
+                default:{
+                    Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+                }
+            }
+        }
+    }
 
 
 
