@@ -119,9 +119,9 @@ public class LoginService  {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if(task.isSuccessful()){
-                    Toast.makeText(loginActivity,"Creacion exitosa", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(loginActivity,"Registración exitosa.", Toast.LENGTH_SHORT).show();
                 }else{
-                    Toast.makeText(loginActivity,"UPS! ocurrio un error inesperado", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(loginActivity,"Mail ya registrado.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
