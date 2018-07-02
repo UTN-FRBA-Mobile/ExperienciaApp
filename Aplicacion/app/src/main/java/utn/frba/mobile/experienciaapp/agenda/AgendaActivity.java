@@ -1,5 +1,7 @@
 package utn.frba.mobile.experienciaapp.agenda;
 
+import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -31,7 +33,7 @@ import utn.frba.mobile.experienciaapp.service.AgendaService;
 import utn.frba.mobile.experienciaapp.service.SessionService;
 
 
-public class AgendaActivity extends AppCompatActivity implements ReciveResponseWS {
+public class AgendaActivity extends AppCompatActivity  {
     private static final String TAG = "AgendaActivity";
 
 
@@ -47,18 +49,21 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_agenda);
-        initComponenteReference();
         sessionService=SessionService.getInstance();
-
-
         if(sessionService.isSessionActive(this)){
             turistaLogueado=sessionService.getTurista();
-            Reserva.GetReservasOf(turistaLogueado.getId(),turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this,GET_RESERVAS));
+//            Reserva.GetReservasOf(turistaLogueado.getId(),turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this,GET_RESERVAS));
+            try {
+                reservas = new ObtenerReservasTask(this).execute(turistaLogueado).get();
+            }catch (Exception e){
+                throw new IllegalStateException(e);
+            }
+
         }else{
             Toast.makeText(getApplicationContext(),"Debe iniciar session.",Toast.LENGTH_LONG).show();
 
         }
-
+        initComponenteReference();
     }
 
     private void initComponenteReference(){
@@ -76,24 +81,49 @@ public class AgendaActivity extends AppCompatActivity implements ReciveResponseW
     }
 
 
-    @Override
-    public void ReciveResponseWS(ResponseWS responseWS, int accion) {
-        switch(accion){
-            case GET_RESERVAS:{
-                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Reserva){
-                    reservas.clear();
-                    reservas = Reserva.addResponseToList(reservas,responseWS);
-                }else{
-                    Toast.makeText(getApplicationContext(),"No tiene reservas agendadas.",Toast.LENGTH_LONG).show();
-                    reservas = new ArrayList<>();
-                }
-                break;
+
+
+    private class ObtenerReservasTask extends AsyncTask<Turista,Void,List<Reserva>> implements ReciveResponseWS {
+
+        private Context context;
+        private List<Reserva> lista=new ArrayList<Reserva>();
+        public ObtenerReservasTask(Context context) {
+            this.context = context;
+        }
+
+
+        @Override
+        protected List<Reserva> doInBackground(Turista... turistas) {
+            Turista turistaLogueado=turistas[0];
+            try {
+                WSRetrofit.ParseResponseWS( Reserva.GetReservasOf(turistaLogueado.getId(),turistaLogueado.getLoginToken()).execute(),this, GET_RESERVAS);
+
+            }catch (Exception e){
+                throw new IllegalStateException(e);
             }
+            return lista;
+        }
+
+
+        @Override
+        public void ReciveResponseWS(ResponseWS responseWS, int accion) {
+            switch(accion){
+                case GET_RESERVAS:{
+                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult() instanceof ArrayList){
+                        lista.clear();
+                        lista = Reserva.addResponseToList(lista,responseWS);
+                    }else{
+                        Toast.makeText(getApplicationContext(),"No tiene reservas agendadas.",Toast.LENGTH_LONG).show();
+                        lista = new ArrayList<>();
+                    }
+                    break;
+                }
 
 
 
-            default:{
-                Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+                default:{
+                    Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
+                }
             }
         }
     }

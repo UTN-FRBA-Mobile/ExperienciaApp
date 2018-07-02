@@ -67,7 +67,7 @@ public class Reserva extends ModeloGenerico{
     public static List<Reserva> addResponseToList(List<Reserva> reservas, ResponseWS responseWS){
         if(responseWS != null && !responseWS.getResult().isEmpty()){
             for(Object obj : responseWS.getResult()){
-                if(obj instanceof Experiencia){
+                if(obj instanceof Reserva){
                     reservas.add((Reserva) obj);
                 }
             }

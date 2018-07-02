@@ -26,6 +26,7 @@ import utn.frba.mobile.experienciaapp.models.Experiencia;
 import utn.frba.mobile.experienciaapp.models.FechaExperiencia;
 import utn.frba.mobile.experienciaapp.models.Reserva;
 import utn.frba.mobile.experienciaapp.models.Turista;
+import utn.frba.mobile.experienciaapp.service.SessionService;
 
 public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.CardViewHolder> {
     private static final String TAG = "RecycleCardAdapter";
@@ -49,7 +50,7 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull final CardViewHolder holder, final int position) {
-        Reserva reserva=reservas.get(position);
+        final Reserva reserva=reservas.get(position);
         holder.position=position;
         FechaExperiencia fechaExperiencia=reserva.getFechaExperiencia();
         Experiencia experiencia=fechaExperiencia.getExperiencia();
@@ -64,6 +65,8 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
             @Override
             public void onClick(View v) {
                 EliminarReservaData data=new EliminarReservaData();
+                data.reserva=reserva;
+                data.turista= SessionService.getInstance().getTurista();
                 try {
                     boolean eliminado=new BorrarReservaTask(context).execute(data).get();
                     if(eliminado){
@@ -163,7 +166,7 @@ public class RecycleCardAdapter extends RecyclerView.Adapter<RecycleCardAdapter.
             switch(accion){
                 //TODO: DELETE SOLO PARA TEST
                 case ELIMINAR_RESERVA:{
-                    if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Turista){
+                    if(responseWS != null && responseWS.getResult() != null ){
                         fueEliminado=true;
                     }else{
                         //Do somthing

@@ -63,11 +63,8 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
 
         Intent intent = getIntent();
         Integer id = intent.getIntExtra("id", 0);
-        if(SessionService.getInstance().isSessionActive(this)) {
-            Turista turistaLogueado = SessionService.getInstance().getTurista();
-            Reserva.GetReservasOf(turistaLogueado.getId(), turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this, GET_RESERVAS));
-        }
-            Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this, GET_DETALLE));
+        Experiencia.GetDetalle(id).enqueue(WSRetrofit.ParseResponseWS(this, GET_DETALLE));
+
         loadingAlert.Loading();
         reservarBT= (Button) findViewById(R.id.reservarBT);
 
@@ -142,10 +139,6 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 public void onClick(View v) {
                     SessionService sessionService = SessionService.getInstance();
                     if (sessionService.isSessionActive(ExperienciaDetailActivity.this)) {
-                        if(estaReservado){
-                            Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva ya realizada..", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
                         EditText cantPersonasEditText = (EditText) reservaModalView.findViewById(R.id.cantPersonas);
                         Spinner horarioSpinner = (Spinner) reservaModalView.findViewById(R.id.fechasDisponibles);
 
@@ -203,7 +196,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
     private boolean estaReservado(){
         if(reservas==null || reservas.isEmpty()) return false;
         for(Reserva reserva: reservas){
-            if(reserva.getFechaExperiencia()!=null && experiencia.getId() == reserva.getFechaExperiencia().getExperiencia().getId()){
+            if(reserva.getFechaExperiencia()!=null && experiencia.getId().equals(reserva.getFechaExperiencia().getExperiencia().getId())){
                 return true;
             }
         }
@@ -215,8 +208,12 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
         switch(accion){
             case GET_RESERVAS:{
                 if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() > 0 && responseWS.getResult().get(0) instanceof Reserva){
+                    reservas=new ArrayList<Reserva>();
                     reservas = Reserva.addResponseToList(reservas,responseWS);
                     estaReservado=estaReservado();
+                    if(estaReservado){
+                        Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Ya posee una reserva para esta experiencia.", Toast.LENGTH_SHORT).show();
+                    }
                 }else{
                     reservas = new ArrayList<>();
                 }
@@ -252,6 +249,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                     calificacion.setNumStars(experiencia.getCalificacino());
 
                     this.setLayoutTexts(experiencia);
+
                 }else{
                     new Alert(this).Show("Ocurrio un error al consultar el WS.","Error");
                 }
@@ -259,6 +257,11 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 if(loadingAlert.IsLoading()){
                     loadingAlert.DismissLoading();
                 }
+                if(SessionService.getInstance().isSessionActive(this)) {
+                    Turista turistaLogueado = SessionService.getInstance().getTurista();
+                    Reserva.GetReservasOf(turistaLogueado.getId(), turistaLogueado.getLoginToken()).enqueue(WSRetrofit.ParseResponseWS(this, GET_RESERVAS));
+                }
+
                 break;
             }
             case RESERVAR_EXPERIENCIA:{
