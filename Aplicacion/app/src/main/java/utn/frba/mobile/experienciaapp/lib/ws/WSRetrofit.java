@@ -159,6 +159,7 @@ public class WSRetrofit {
             @Override
             public void onFailure(Call<ResponseWS> call, Throwable t) {
                 // handle execution failures like no internet connectivity
+                Log.w("RETROFIT",t);
                 Log.e("RETROFIT","ERROR");
                 reciveResponseWS.ReciveResponseWS(null, accion);
             }

@@ -275,7 +275,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
             }
         }
     }
-/*
+
     private class ReservaData{
         private Turista turista;
         private String cantPersonas;
@@ -314,7 +314,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
             this.idFechaSeleccionada = idFechaSeleccionada;
         }
     }
-       private class ReservarTask extends AsyncTask<ReservaData,Void,Reserva> implements ReciveResponseWS {
+     /*  private class ReservarTask extends AsyncTask<ReservaData,Void,Reserva> implements ReciveResponseWS {
 
         private Context context;
         private Reserva reserva;
