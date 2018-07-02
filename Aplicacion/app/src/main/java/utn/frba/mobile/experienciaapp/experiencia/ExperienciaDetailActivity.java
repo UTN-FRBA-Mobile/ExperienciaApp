@@ -50,6 +50,8 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
     private List<Reserva> reservas;
     private Button reservarBT;
     private boolean estaReservado=false;
+    private String cantPersonas;
+    private String horario;
 
     Alert loadingAlert = new Alert(this);
 
@@ -153,29 +155,17 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                                 !horarioSpinner.getSelectedItem().toString().isEmpty()
                                 ) {
 
-                            String cantPersonas = cantPersonasEditText.getText().toString();
-                            String horario = horarioSpinner.getSelectedItem().toString();
+                            cantPersonas = cantPersonasEditText.getText().toString();
+                            horario = horarioSpinner.getSelectedItem().toString();
 
                             Turista turista = sessionService.getTurista();
                             ReservaData data=new ReservaData();
                             data.setTurista(turista);
                             data.setCantPersonas(cantPersonas);
                             data.setIdFechaSeleccionada(getIdFechaSeleccionada(horario));
-                            //data.setTotal(""+Float.valueOf(experiencia.getPrecio())*Integer.valueOf(cantPersonas));
                             data.setTotal(experiencia.getPrecio());
-                            //data.setTotal();
-                            try {
-                                Reserva reserva=new ReservarTask(ExperienciaDetailActivity.this).execute(data).get();
-                                if(reserva!=null){
-                                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + ".", Toast.LENGTH_SHORT).show();
-                                    reservaModalAlert.Dismiss();
-                                }else{
-                                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Se genero un error, no se puedo concretar la reserva.", Toast.LENGTH_SHORT).show();
-                                }
+                            Reserva.ReservarExperiencia(data.getTurista().getId(),data.getTurista().getLoginToken(),data.getIdFechaSeleccionada(),data.getCantPersonas(),data.getTotal()).enqueue(WSRetrofit.ParseResponseWS(ExperienciaDetailActivity.this, RESERVAR_EXPERIENCIA));
 
-                            } catch (Exception e) {
-                                throw new IllegalStateException(e);
-                            }
 
                         } else {
                             Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Complete los datos requeridos", Toast.LENGTH_SHORT).show();
@@ -265,14 +255,27 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 }
                 break;
             }
+            case RESERVAR_EXPERIENCIA:{
+                if(responseWS != null && responseWS.getResult() != null && responseWS.getResult().size() == 1 && responseWS.getResult().get(0) instanceof Reserva){
+                    Reserva reserva = (Reserva) responseWS.getResult().get(0);
+                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Reserva exitosa para " + cantPersonas + " persona(s) a las " + horario + ".", Toast.LENGTH_SHORT).show();
+                    reservaModalAlert.Dismiss();
+                }else{
+                    Toast.makeText(ExperienciaDetailActivity.this.getApplicationContext(), "Se genero un error, no se puedo concretar la reserva.", Toast.LENGTH_SHORT).show();
+                    if(responseWS!=null){
+                        Log.w(TAG,"Reserva no satisfactoria, "+responseWS.getMsg());
+                    }
 
+                }
+                break;
+            }
 
             default:{
                 Log.d(TAG,"ReciveResponseWS accion no identificada: " + accion);
             }
         }
     }
-
+/*
     private class ReservaData{
         private Turista turista;
         private String cantPersonas;
@@ -311,8 +314,7 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
             this.idFechaSeleccionada = idFechaSeleccionada;
         }
     }
-
-    private class ReservarTask extends AsyncTask<ReservaData,Void,Reserva> implements ReciveResponseWS {
+       private class ReservarTask extends AsyncTask<ReservaData,Void,Reserva> implements ReciveResponseWS {
 
         private Context context;
         private Reserva reserva;
@@ -353,6 +355,9 @@ public class ExperienciaDetailActivity extends BaseActivityWithToolBar implement
                 }
             }
         }
-    }
+    }*/
+
+
+
 
 }
